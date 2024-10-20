@@ -14,6 +14,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
@@ -37,8 +38,12 @@ public class CertificatesService {
 
 	public void verifyObjectWithSignature(String owner, Object object, String encodedSignature) {
 		try {
-			String signedObject = Json.mapper().writeValueAsString(object);
-
+			String signedObject;
+			if (object.getClass().equals(String.class)) {
+				signedObject = (String) object;
+			} else {
+				signedObject = Json.mapper().writeValueAsString(object);
+			}
 			PublicKey publicKey = readPublicKey(owner);
 
 			Signature signature = Signature.getInstance("SHA256withRSA");
@@ -47,10 +52,13 @@ public class CertificatesService {
 
 			byte[] signatureBytes = Base64.getDecoder().decode(encodedSignature);
 
+
+			log.warn("Should be {}", shouldBe(owner, object));
+			log.warn("equal ? {}", encodedSignature.equals(shouldBe(owner, object)));
+
 			boolean isVerified;
 			try {
 				isVerified = signature.verify(signatureBytes);
-
 			} catch (SignatureException e) {
 				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", owner, signedObject, encodedSignature, e);
 				return;
@@ -61,14 +69,25 @@ public class CertificatesService {
 				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", owner, signedObject, encodedSignature);
 				throw UNAUTHORIZED_EXCEPTION;
 			}
+		} catch (HttpStatusCodeException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("Error during verifying object [owner={}, object={}, signature={}]", owner, object, encodedSignature, e);
 			throw INTERNAL_SERVER_EXCEPTION;
 		}
 	}
 
+	private String shouldBe(String owner, Object object) throws Exception {
+		PrivateKey privateKey = readPrivateKey(owner);
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initSign(privateKey);
+		byte[] dataToSign = object.toString().getBytes(StandardCharsets.UTF_8);
+		signature.update(dataToSign);
+		byte[] signedData = signature.sign();
+		return Base64.getEncoder().encodeToString(signedData);
+	}
 
-	public PrivateKey readPrivateKey(String owner) throws Exception {
+	private PrivateKey readPrivateKey(String owner) throws Exception {
 		String path = properties.path() + "/" + owner + TYPE.PRIVATE.suffix;
 
 		PEMParser pemParser = new PEMParser(new FileReader(path));
