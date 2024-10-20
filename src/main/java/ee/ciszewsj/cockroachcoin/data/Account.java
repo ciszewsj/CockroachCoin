@@ -7,6 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class Account {
 	private final String name;
-	private final String secret;
 	private long balance;
 }

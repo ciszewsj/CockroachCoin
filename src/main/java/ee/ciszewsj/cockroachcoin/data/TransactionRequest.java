@@ -8,4 +8,11 @@ public record TransactionRequest(
 		@NotEmpty String receiver,
 		@Min(0) long amount
 ) {
+	public String sender() {
+		return sender.toLowerCase();
+	}
+
+	public String receiver() {
+		return receiver.toLowerCase();
+	}
 }

@@ -11,8 +11,10 @@ import org.springframework.web.client.HttpClientErrorException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	public static HttpClientErrorException NOT_FOUND_EXCEPTION = new HttpClientErrorException(HttpStatus.NOT_FOUND);
-	public static HttpClientErrorException TRANSACTION_OVER_LIMIT_EXCEPTION = new HttpClientErrorException(HttpStatus.CONFLICT, "Transaction over limit");
+	public final static HttpClientErrorException NOT_FOUND_EXCEPTION = new HttpClientErrorException(HttpStatus.NOT_FOUND);
+	public final static HttpClientErrorException UNAUTHORIZED_EXCEPTION = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
+	public final static HttpClientErrorException TRANSACTION_OVER_LIMIT_EXCEPTION = new HttpClientErrorException(HttpStatus.CONFLICT, "Transaction over limit");
+	public final static HttpClientErrorException INTERNAL_SERVER_EXCEPTION = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 
 	@ExceptionHandler(HttpClientErrorException.class)
 	public ResponseEntity<ErrorData> handleHttpClientErrorException(HttpClientErrorException ex) {
