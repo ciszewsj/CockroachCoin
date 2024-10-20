@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.TRANSACTION_OVER_LIMIT_EXCEPTION;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -20,7 +22,7 @@ public class TransactionService {
 			log.info("Do transaction [sender={}, receiver={}, amount={}]", secret, receiver, amount);
 		} else {
 			log.info("Could not do operation over limit [sender={}, receiver={}, amount={}]", sender, receiver, amount);
-			throw new IllegalStateException();
+			throw TRANSACTION_OVER_LIMIT_EXCEPTION;
 		}
 	}
 }

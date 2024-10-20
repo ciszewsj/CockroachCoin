@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.NOT_FOUND_EXCEPTION;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class AccountRepository {
 				.findAny()
 				.orElseThrow(() -> {
 					log.warn("Could not find account with authentication [accountName={}, secret={}]", accountName, secret);
-					return new IllegalStateException();
+					return NOT_FOUND_EXCEPTION;
 				});
 	}
 
@@ -33,7 +35,7 @@ public class AccountRepository {
 				.findAny()
 				.orElseThrow(() -> {
 					log.warn("Could not find account [accountName={}]", accountName);
-					return new IllegalStateException();
+					return NOT_FOUND_EXCEPTION;
 				});
 	}
 }
