@@ -31,7 +31,7 @@ public class GreetingsController {
 		log.debug("Request for greetings");
 	}
 
-	@PostMapping("/greetings")
+	@PostMapping
 	public CreateNodeResponse handshake(@Valid @RequestBody Node request) {
 
 		log.debug("Handshake request [request={}]", request);
@@ -39,9 +39,7 @@ public class GreetingsController {
 
 		List<Node> nodeList = nodeService.getNodeList();
 		List<Transaction> transactionList = transactionService.getTransactionList();
-		List<AccountDto> accountList = accountRepository.getAccountList().stream().map(
-				account -> new AccountDto(account.getName(), null)
-		).toList();
+		List<AccountDto> accountList = accountRepository.getAccounts();
 		return new CreateNodeResponse(transactionList, nodeList, accountList);
 	}
 }

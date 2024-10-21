@@ -1,6 +1,7 @@
 package ee.ciszewsj.cockroachcoin.controller;
 
 import ee.ciszewsj.cockroachcoin.data.Account;
+import ee.ciszewsj.cockroachcoin.data.AccountDto;
 import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +17,9 @@ public class AccountsController {
 	private final AccountRepository accountRepository;
 
 	@GetMapping
-	public List<Account> getAccounts() {
+	public List<AccountDto> getAccounts() {
 		log.debug("Request for get accounts");
-		return accountRepository.getAccountList();
+		return accountRepository.getAccounts();
 	}
 
 	@PostMapping("/{owner}")

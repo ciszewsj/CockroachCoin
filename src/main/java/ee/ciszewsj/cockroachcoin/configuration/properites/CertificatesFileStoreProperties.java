@@ -7,5 +7,6 @@ public record CertificatesFileStoreProperties(String myName,
                                               String privateKey,
                                               String publicKey,
                                               String connectUrl,
+                                              String myUrl,
                                               String path) {
 }

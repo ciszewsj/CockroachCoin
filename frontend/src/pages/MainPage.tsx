@@ -86,8 +86,6 @@ export const MainPage = () => {
 
     return (<div>
         {!owner && <>
-            <div>Private key:</div>
-            <input type={"file"} onChange={handleFileChange}/>
             <div>User:</div>
             <input
                 type="text"

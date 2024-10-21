@@ -78,6 +78,12 @@ public class CertificatesService {
 		Files.writeString(Path.of(path), publicKey);
 	}
 
+	public String readPublicKeyString(String owner) throws IOException {
+		String path = properties.path() + "/" + owner + TYPE.PUBLIC.suffix;
+
+		return Files.readString(Path.of(path));
+	}
+
 	private PublicKey readPublicKey(String owner) throws Exception {
 		KeyFactory factory = KeyFactory.getInstance("RSA");
 		String path = properties.path() + "/" + owner + TYPE.PUBLIC.suffix;

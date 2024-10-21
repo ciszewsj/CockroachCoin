@@ -1,5 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
+import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.Node;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NodeService {
 	private final Map<String, String> nodes = new HashMap<>();
-
+	private final CertificatesFileStoreProperties properties;
 
 	public void registerNode(Node node) {
+		if (node.name().equals(properties.myName())) {
+			return;
+		}
 		nodes.put(node.name(), node.url());
 		log.info("Node register successfully");
 	}
