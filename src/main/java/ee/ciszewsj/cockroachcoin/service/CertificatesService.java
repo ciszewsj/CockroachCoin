@@ -11,8 +11,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 
+import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
@@ -66,6 +70,12 @@ public class CertificatesService {
 			log.error("Error during verifying object [owner={}, object={}, signature={}]", owner, object, encodedSignature, e);
 			throw INTERNAL_SERVER_EXCEPTION;
 		}
+	}
+
+	public void savePublicKey(String owner, String publicKey) throws IOException {
+		String path = properties.path() + "/" + owner + TYPE.PUBLIC.suffix;
+
+		Files.writeString(Path.of(path), publicKey);
 	}
 
 	private PublicKey readPublicKey(String owner) throws Exception {

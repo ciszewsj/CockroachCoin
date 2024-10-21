@@ -2,8 +2,8 @@ package ee.ciszewsj.cockroachcoin.configuration;
 
 import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
-import ee.ciszewsj.cockroachcoin.data.TransactionListResponse;
-import ee.ciszewsj.cockroachcoin.data.TransactionRequest;
+import ee.ciszewsj.cockroachcoin.data.response.TransactionListResponse;
+import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.CertificatesService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
@@ -48,13 +48,13 @@ public class NodeInitializer {
 	}
 
 	private void connectToNodes() {
-		
+
 	}
 
 	private void getTransactions() throws IOException, InterruptedException {
 		HttpClient httpClient = HttpClient.newHttpClient();
 
-		String url = properties.connectUrl() + "/api/v1/transactions";
+		String url = properties.connectUrl() + "/api/v1/greetings";
 
 		HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create(url))
@@ -77,8 +77,6 @@ public class NodeInitializer {
 
 	private void initFirstTransaction() {
 		transactionService.addTransaction(List.of(new Transaction(0, null, null, null, null, clock.millis(), Transaction.TYPE.GENESIS)));
-		transactionService.doDeposit("acc1", 10000);
-		transactionService.doDeposit("acc2", 10000);
 	}
 
 	private void recalculateTransactions() {

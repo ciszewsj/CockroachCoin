@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 public record Node(
 		@NotEmpty String name,
-		@NotEmpty String url,
-		@NotEmpty String pubKey) {
+		@NotEmpty String url
+) {
 }

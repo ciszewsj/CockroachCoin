@@ -1,4 +1,4 @@
-package ee.ciszewsj.cockroachcoin.data;
+package ee.ciszewsj.cockroachcoin.data.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;

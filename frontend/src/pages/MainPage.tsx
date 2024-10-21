@@ -1,11 +1,13 @@
 import {useState} from "react";
-import {createBase64Signature} from "../utils/SignatureCreator";
+import {createBase64Signature, generateNewKeys, readKeys} from "../utils/SignatureCreator";
 import {AccountDetails} from "../types/AccountDetails";
 import {TransactionRequest} from "../types/TransactionRequest";
 
 export const MainPage = () => {
     const [user, setUser] = useState('');
-    const [fileContent, setFileContent] = useState('');
+    const [password, setPassword] = useState('');
+    const [privateKey, setPrivateKey] = useState('');
+    const [publicKey, setPublicKey] = useState('');
     const [owner, setOwner] = useState<AccountDetails | null>(null);
 
     const [receiver, setReceiver] = useState<string>('');
@@ -19,32 +21,37 @@ export const MainPage = () => {
 
             reader.onload = (e: any) => {
                 const content = e.target.result;
-                setFileContent(content);
+                setPrivateKey(content);
             };
 
             reader.readAsText(file);
         }
     };
 
-    const loadAccountData = async () => {
-        const signature = createBase64Signature(user, fileContent)
+    const loadAccountData = async (privateK: string, publicK: string) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/v1/accounts/${user}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': '*/*',
-                    'signature': signature
+            const signature = createBase64Signature(user, privateKey)
+            try {
+                const response = await fetch(`http://localhost:8080/api/v1/accounts/${user}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': '*/*',
+                        'signature': signature,
+                    },
+                    body: publicK
+                })
+                if (response.ok) {
+                    let account: AccountDetails = await response.json()
+                    console.log(account)
+                    setOwner(account)
+                } else {
+                    console.error(response)
                 }
-            })
-            if (response.ok) {
-                let account: AccountDetails = await response.json()
-                console.log(account)
-                setOwner(account)
-            } else {
-                console.error(response)
+            } catch (e) {
+                console.error("Error", e)
             }
         } catch (e) {
-            console.error("Error", e)
+            console.error("Could not load data", e)
         }
     }
 
@@ -55,7 +62,7 @@ export const MainPage = () => {
             amount: amount
         }
         let data = JSON.stringify(transactionRequest)
-        const signature = createBase64Signature(data, fileContent)
+        const signature = createBase64Signature(data, privateKey)
         try {
             let response = await fetch('http://localhost:8080/api/v1/transactions', {
                 method: 'POST',
@@ -71,7 +78,7 @@ export const MainPage = () => {
             } else {
                 console.error("Exception on transaction", response)
             }
-            await loadAccountData()
+            await loadAccountData(privateKey, publicKey)
         } catch (e) {
             console.log(e)
         }
@@ -87,8 +94,28 @@ export const MainPage = () => {
                 value={user}
                 onChange={e => setUser(e.target.value)}
             />
+            <div>Password:</div>
+            <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+            />
             <div>
-                <button onClick={loadAccountData}>Load user</button>
+                <button onClick={() => {
+                    try {
+                        let key = readKeys(user, password)
+                        setPrivateKey(key.private)
+                        setPublicKey(key.public)
+                        console.log(key.public)
+                        loadAccountData(key.private, key.public)
+                    } catch (e) {
+                        console.error("Could not read key", e)
+                    }
+                }}>Load user
+                </button>
+            </div>
+            <div>
+                <button onClick={() => generateNewKeys(user, password)}>Generate</button>
             </div>
         </>}
         {owner && <>

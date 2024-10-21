@@ -1,4 +1,6 @@
-package ee.ciszewsj.cockroachcoin.data;
+package ee.ciszewsj.cockroachcoin.data.response;
+
+import ee.ciszewsj.cockroachcoin.data.Transaction;
 
 import java.util.List;
 
