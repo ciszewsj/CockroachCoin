@@ -16,9 +16,9 @@ import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.NOT
 @RequiredArgsConstructor
 public class AccountRepository {
 	private final List<Account> accountList = List.of(
-			new Account("acc1", 1000L),
-			new Account("acc2", 1000L),
-			new Account("acc3", 1000L)
+			new Account("acc1", 0L),
+			new Account("acc2", 0L),
+			new Account("acc3", 0L)
 	);
 
 	public Account findAccount(String accountName) {

@@ -1,10 +1,9 @@
 package ee.ciszewsj.cockroachcoin.controller;
 
-import ee.ciszewsj.cockroachcoin.data.Account;
-import ee.ciszewsj.cockroachcoin.data.Transaction;
-import ee.ciszewsj.cockroachcoin.data.TransactionRequest;
+import ee.ciszewsj.cockroachcoin.data.*;
 import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.CertificatesService;
+import ee.ciszewsj.cockroachcoin.service.NodeService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,7 @@ public class BankController {
 	private final TransactionService transactionService;
 	private final AccountRepository accountRepository;
 	private final CertificatesService certificatesService;
+	private final NodeService nodeService;
 
 	@GetMapping
 	public void greetings() {
@@ -44,9 +44,9 @@ public class BankController {
 	}
 
 	@GetMapping("/transactions")
-	public List<Transaction> getTransactions() {
+	public TransactionListResponse getTransactions() {
 		log.debug("Request for get transactions");
-		return transactionService.getTransactionList();
+		return new TransactionListResponse(transactionService.getTransactionList());
 	}
 
 	@PostMapping("/transactions")
@@ -55,5 +55,17 @@ public class BankController {
 		log.debug("Request for do transaction [{}]", request);
 		certificatesService.verifyObjectWithSignature(request.sender(), request, signature);
 		transactionService.doTransaction(request.sender(), request.receiver(), request.amount(), signature);
+	}
+
+	@GetMapping("/nodes")
+	public List<Node> getNodes() {
+		log.debug("Request for get nodes");
+		return nodeService.getNodeList();
+	}
+
+	@PostMapping("/nodes")
+	public void postNode(@Valid @RequestBody Node request) {
+		log.debug("Request for register new node [{}]", request);
+		nodeService.registerNode(request);
 	}
 }
