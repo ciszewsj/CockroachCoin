@@ -21,9 +21,10 @@ import java.util.concurrent.Executors;
 public class SyncService {
 	private final NodeService nodeService;
 
-	ExecutorService executorService = Executors.newFixedThreadPool(8);
+	ExecutorService executorService = Executors.newFixedThreadPool(2);
 
 	public void addAccount(Account account, String signature, String publicKey) {
+		log.error("SYNC...");
 		nodeService.getNodeList().forEach(node ->
 				executorService.submit(() -> {
 					HttpClient httpClient = HttpClient.newHttpClient();
@@ -37,7 +38,8 @@ public class SyncService {
 								.build();
 						HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 						log.info("Account added successfully [node={}]", node);
-					} catch (IOException | InterruptedException | URISyntaxException e) {
+					} catch (Exception e) {
+						log.error("ERROR [node={}]", node, e);
 						throw new RuntimeException(e);
 					}
 				})

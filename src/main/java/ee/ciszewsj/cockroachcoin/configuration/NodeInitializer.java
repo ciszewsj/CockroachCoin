@@ -54,8 +54,8 @@ public class NodeInitializer {
 
 
 	private void getTransactions() throws IOException, InterruptedException {
-		nodeService.registerNode(new Node(properties.connectUrl(), "BASE"));
-		
+		nodeService.registerNode(new Node("BASE", properties.connectUrl()));
+
 		HttpClient httpClient = HttpClient.newHttpClient();
 		String url = properties.connectUrl() + "/api/v1/greetings";
 		Node thisNode = new Node(properties.myName(), properties.myUrl());

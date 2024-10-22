@@ -10,6 +10,8 @@ export const MainPage = () => {
     const [publicKey, setPublicKey] = useState('');
     const [owner, setOwner] = useState<AccountDetails | null>(null);
 
+    const url = 'http://localhost:8082'
+
     const [receiver, setReceiver] = useState<string>('');
     const [amount, setAmount] = useState<number>(0);
 
@@ -32,7 +34,7 @@ export const MainPage = () => {
         try {
             const signature = createBase64Signature(user, privateKey)
             try {
-                const response = await fetch(`http://localhost:8080/api/v1/accounts/${user}`, {
+                const response = await fetch(`${url}/api/v1/accounts/${user}`, {
                     method: 'POST',
                     headers: {
                         'Accept': '*/*',
@@ -64,12 +66,12 @@ export const MainPage = () => {
         let data = JSON.stringify(transactionRequest)
         const signature = createBase64Signature(data, privateKey)
         try {
-            let response = await fetch('http://localhost:8080/api/v1/transactions', {
+            let response = await fetch(`${url}/api/v1/transactions`, {
                 method: 'POST',
                 headers: {
                     'Accept': '*/*',
                     'Content-Type': 'application/json',
-                    'signature': signature  // Add your signature here
+                    'signature': signature
                 },
                 body: data
             })

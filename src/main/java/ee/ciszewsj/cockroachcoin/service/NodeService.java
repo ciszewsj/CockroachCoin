@@ -26,7 +26,7 @@ public class NodeService {
 			return;
 		}
 		nodes.put(node.name(), node.url());
-		log.info("Node register successfully");
+		log.info("Node register successfully [node={}]", node);
 	}
 
 	public List<Node> getNodeList() {
