@@ -1,4 +1,5 @@
 export interface AccountDetails {
-    name: string,
-    balance: number,
+    privateKey: string,
+    publicKey: string,
+    balance?: number,
 }

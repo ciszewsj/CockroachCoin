@@ -1,11 +1,16 @@
 import React from 'react';
-import {MainPage} from "./pages/MainPage";
 import {LoginPage} from "./pages/LoginPage";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {WalletPage} from "./pages/WalletPage";
 
 function App() {
     return (
-        // <MainPage/>
-        <LoginPage/>
+        <BrowserRouter>
+            <Routes>
+                <Route path={"/"} element={<LoginPage/>}/>
+                <Route path={"/wallet"} element={<WalletPage/>}/>
+            </Routes>
+        </BrowserRouter>
     );
 }
 

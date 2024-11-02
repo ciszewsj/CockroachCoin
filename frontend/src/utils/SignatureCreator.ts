@@ -9,6 +9,16 @@ export const createBase64Signature = (object: string, rsaPrivateKey: string): st
     return forge.util.encode64(signature);
 };
 
+export const generateNewKey = async () => {
+    let [keypair] = await Promise.all([forge.pki.rsa.generateKeyPair({bits: 2048, e: 0x10001})])
+    let privateKey = forge.pki.privateKeyToPem(keypair.privateKey);
+    let publicKey = forge.pki.publicKeyToPem(keypair.publicKey);
+    return {
+        publicKey: publicKey,
+        privateKey: privateKey,
+    }
+}
+
 
 export const generateNewKeys = async (username: string, password: string) => {
     if (localStorage.getItem(username) !== null) {
@@ -16,7 +26,7 @@ export const generateNewKeys = async (username: string, password: string) => {
         return;
     }
     try {
-        let keypair = await forge.pki.rsa.generateKeyPair({bits: 2048, e: 0x10001})
+        let [keypair] = await Promise.all([forge.pki.rsa.generateKeyPair({bits: 2048, e: 0x10001})])
         let privateKey = forge.pki.privateKeyToPem(keypair.privateKey);
         let publicKey = forge.pki.publicKeyToPem(keypair.publicKey);
         let encrypted_key = encryptAES(privateKey, generateIVFromUsername(username), convertToKey(password, 16));
