@@ -1,18 +1,21 @@
 import {MainButton} from "../componenets/atoms/MainButton";
 import {SecondaryButton} from "../componenets/atoms/SecondaryButton";
 import {AccountList} from "../componenets/organisms/AccountList";
-import React, {FC} from "react";
+import React, {FC, useState} from "react";
 import {generateNewKey} from "../utils/SignatureCreator";
 import {KeysObject} from "../types/KeysObject";
 import {SecuredPage} from "./SecuredPage";
 import {CredentialsDto} from "../types/CredentialsDto";
 import {addKeyToLocalStorage} from "../utils/LocalStorageUtils";
+import ImportFileModal from "../componenets/organisms/ImportFileModal";
 
 export const WalletPage: FC<{
     credentials?: CredentialsDto,
     keys: KeysObject[],
     setKeys: React.Dispatch<React.SetStateAction<KeysObject[]>>,
 }> = ({credentials, keys, setKeys}) => {
+
+    const [importOpen, setImportOpen] = useState<boolean>(false)
 
     return (
         <SecuredPage credentials={credentials}>
@@ -33,13 +36,14 @@ export const WalletPage: FC<{
                         >
                             Generate
                         </MainButton>
-                        <SecondaryButton>
+                        <SecondaryButton onClick={(e) => setImportOpen(true)}>
                             Import
                         </SecondaryButton>
                     </div>
                     <AccountList credentials={credentials!} keys={keys} setKeys={setKeys}/>
                 </div>
             </div>
+            <ImportFileModal open={importOpen} setOpen={setImportOpen} setKeys={setKeys} keys={keys}/>
         </SecuredPage>
     )
 }
