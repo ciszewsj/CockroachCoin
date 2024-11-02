@@ -19,45 +19,10 @@ export const generateNewKey = async () => {
     }
 }
 
-
-// export const generateNewKeys = async (username: string, password: string) => {
-//     if (localStorage.getItem(username) !== null) {
-//         console.error("WALLET ALREADY EXISTS")
-//         return;
-//     }
-//     try {
-//         let [keypair] = await Promise.all([forge.pki.rsa.generateKeyPair({bits: 2048, e: 0x10001})])
-//         let privateKey = forge.pki.privateKeyToPem(keypair.privateKey);
-//         let publicKey = forge.pki.publicKeyToPem(keypair.publicKey);
-//         let encrypted_key = encryptAES(privateKey, generateIVFromUsername(username), convertToKey(password, 16));
-//         localStorage.setItem(username, encrypted_key.encryptedData)
-//         console.log("KEYS GENERATE SUCCESSFULLY")
-//         return publicKey
-//     } catch (e) {
-//         console.log("error", e)
-//
-//     }
-//     return "";
-// }
-
 export const privateKeyToPublic = (privateKey: string) => {
     const pk = forge.pki.privateKeyFromPem(privateKey.trim());
     const publicKey = forge.pki.setRsaPublicKey(pk.n, pk.e);
     return forge.pki.publicKeyToPem(publicKey);
-}
-
-export const readKeys = (username: string, password: string) => {
-    const privateKey = decryptAES(localStorage.getItem(username)!, generateIVFromUsername(username), convertToKey(password, 16));
-    console.log(privateKey)
-    const pk = forge.pki.privateKeyFromPem(privateKey.trim());
-
-    const publicKey = forge.pki.setRsaPublicKey(pk.n, pk.e);
-
-    const publicKeyPem = forge.pki.publicKeyToPem(publicKey);
-    return {
-        public: publicKeyPem,
-        private: privateKey,
-    }
 }
 
 
@@ -74,16 +39,6 @@ export const encryptAES = (text: string, password: string) => {
         encryptedData: forge.util.encode64(cipher.output.getBytes()),
     };
 };
-
-
-const generateIVFromUsername = (username: string): string => {
-    const md = forge.md.sha256.create();
-    md.update(username, 'utf8');
-
-    const hash = md.digest().getBytes();
-    return convertToKey(hash.slice(0, 16), 16);
-};
-
 
 export const decryptAES = (encryptedData: string, iv: string, password: string) => {
     const keyBytes = forge.util.createBuffer(convertToKey(password, 16), 'utf8');

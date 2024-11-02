@@ -7,7 +7,8 @@ import {createKeysInLocalStorage, readKeysFromLocalStorage} from "../utils/Local
 
 export const LoginPage: FC<{
     setCredentials: any,
-}> = ({setCredentials}) => {
+    setKeys: any,
+}> = ({setCredentials, setKeys}) => {
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ export const LoginPage: FC<{
     const handleLogin = (e: any) => {
         e.preventDefault();
         try {
-            readKeysFromLocalStorage(username, password)
+            setKeys(readKeysFromLocalStorage(username, password))
             setCredentials({
                 username: username,
                 password: password,
