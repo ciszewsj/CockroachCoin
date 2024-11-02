@@ -89,11 +89,11 @@ export const decryptAES = (encryptedData: string, iv: string, password: string) 
     const keyBytes = forge.util.createBuffer(convertToKey(password, 16), 'utf8');
 
     if (iv.length !== 24) {
-        throw new Error('IV musi mieć długość 24 bajtów w formacie Base64.');
+        throw new Error('NOT_VALID_IV');
     }
 
     const decipher = forge.cipher.createDecipher('AES-CBC', keyBytes);
-    decipher.start({ iv: forge.util.createBuffer(forge.util.decode64(iv)) });
+    decipher.start({iv: forge.util.createBuffer(forge.util.decode64(iv))});
 
     const encryptedBytes = forge.util.decode64(encryptedData);
     decipher.update(forge.util.createBuffer(encryptedBytes));
@@ -103,7 +103,7 @@ export const decryptAES = (encryptedData: string, iv: string, password: string) 
     if (result) {
         return decipher.output.toString();
     } else {
-        throw new Error('Deszyfrowanie nie powiodło się.');
+        throw new Error('DECRYPT_FAIL');
     }
 };
 

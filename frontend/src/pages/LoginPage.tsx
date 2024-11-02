@@ -1,11 +1,13 @@
-import {useState} from "react";
+import {FC, useState} from "react";
 import {TextInputField} from "../componenets/atoms/TextInputField";
 import {MainButton} from "../componenets/atoms/MainButton";
 import {useNavigate} from "react-router-dom";
 import {SecondaryButton} from "../componenets/atoms/SecondaryButton";
 import {createKeysInLocalStorage, readKeysFromLocalStorage} from "../utils/LocalStorageUtils";
 
-export const LoginPage = () => {
+export const LoginPage: FC<{
+    setCredentials: any,
+}> = ({setCredentials}) => {
     const navigate = useNavigate();
 
     const [username, setUsername] = useState('');
@@ -15,6 +17,10 @@ export const LoginPage = () => {
         e.preventDefault();
         try {
             readKeysFromLocalStorage(username, password)
+            setCredentials({
+                username: username,
+                password: password,
+            })
             navigate('/wallet');
         } catch (err) {
             console.error(err)
