@@ -54,6 +54,18 @@ export const addKeyToLocalStorage = (user: string, password: string, privateKey:
 }
 
 export const removeKeyFromLocalStorage = (user: string, password: string, privateKey: string) => {
-
-}
-
+    const obj = localStorage.getItem(user);
+    if (obj) {
+        const encryptedWallet: EncryptedWallet = JSON.parse(obj);
+        const wallet: WalletDto = JSON.parse(decryptAES(encryptedWallet.encrypted, encryptedWallet.iv, password));
+        wallet.keys = wallet.keys.filter(k => k.key !== privateKey);
+        const data = encryptAES(JSON.stringify(wallet), password);
+        const newEncryptedWallet: EncryptedWallet = {
+            encrypted: data.encryptedData,
+            iv: data.iv
+        };
+        localStorage.setItem(user, JSON.stringify(newEncryptedWallet));
+        return;
+    }
+    throw new Error("COULD_NOT_UPDATE_WALLET");
+};

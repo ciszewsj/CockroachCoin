@@ -3,7 +3,8 @@ import {AccountDetails} from "../../types/AccountDetails";
 
 export const AccountField: FC<{
     accounts: AccountDetails
-}> = ({accounts}) => {
+    handleDelete: any
+}> = ({accounts, handleDelete}) => {
 
     const cleanKey = (key: string) => {
         return key.replace(/-----BEGIN PUBLIC KEY-----/g, '')
@@ -43,7 +44,10 @@ export const AccountField: FC<{
                     Export
                 </button>
                 <button
-                    className="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700 focus:ring-2 focus:ring-red-300">
+                    className="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700 focus:ring-2 focus:ring-red-300"
+                    onClick={() => {
+                        handleDelete(accounts.privateKey)
+                    }}>
                     Delete
                 </button>
             </div>
@@ -55,6 +59,7 @@ export const AccountField: FC<{
 const generateUUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
         const r = Math.random() * 16 | 0;
+        // eslint-disable-next-line no-mixed-operators
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });

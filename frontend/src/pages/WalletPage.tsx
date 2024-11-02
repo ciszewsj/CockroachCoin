@@ -1,8 +1,7 @@
 import {MainButton} from "../componenets/atoms/MainButton";
 import {SecondaryButton} from "../componenets/atoms/SecondaryButton";
 import {AccountList} from "../componenets/organisms/AccountList";
-import {FC, useEffect, useState} from "react";
-import {WalletDto} from "../types/WalletDto";
+import React, {FC} from "react";
 import {generateNewKey} from "../utils/SignatureCreator";
 import {KeysObject} from "../types/KeysObject";
 import {SecuredPage} from "./SecuredPage";
@@ -12,22 +11,8 @@ import {addKeyToLocalStorage} from "../utils/LocalStorageUtils";
 export const WalletPage: FC<{
     credentials?: CredentialsDto,
     keys: KeysObject[],
-    setKeys: any,
+    setKeys: React.Dispatch<React.SetStateAction<KeysObject[]>>,
 }> = ({credentials, keys, setKeys}) => {
-
-
-    let readWallet = () => {
-        console.log(localStorage.getItem("user"))
-    }
-
-
-    useEffect(() => {
-        const dto: WalletDto = {
-            keys: []
-        }
-
-        readWallet()
-    }, []);
 
     return (
         <SecuredPage credentials={credentials}>
@@ -52,7 +37,7 @@ export const WalletPage: FC<{
                             Import
                         </SecondaryButton>
                     </div>
-                    <AccountList keys={keys}/>
+                    <AccountList credentials={credentials!} keys={keys} setKeys={setKeys}/>
                 </div>
             </div>
         </SecuredPage>
