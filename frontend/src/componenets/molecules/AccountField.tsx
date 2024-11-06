@@ -1,10 +1,32 @@
-import {FC} from "react";
+import {FC, useContext, useEffect, useState} from "react";
 import {AccountDetails} from "../../types/AccountDetails";
+import {HttpAddressContext} from "../../context/HttpAddressProvider";
 
 export const AccountField: FC<{
     accounts: AccountDetails
     handleDelete: any
 }> = ({accounts, handleDelete}) => {
+    const [address] = useContext(HttpAddressContext)!!;
+
+    const [balance, setBalance] = useState("NOT_READY")
+
+    console.log("add", address)
+
+    useEffect(() => {
+        setBalance("NOT_READY")
+        fetch(address + '/api/v1/accounts', {
+            method: 'POST',
+            headers: {
+                'accept': '*/*',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify("string")
+        })
+            .then(response => response.json())
+            .then(data => setBalance(data.balance))
+            .catch(error => setBalance('Error'));
+
+    }, [address]);
 
     const cleanKey = (key: string) => {
         return key.replace(/-----BEGIN PUBLIC KEY-----/g, '')
@@ -30,7 +52,7 @@ export const AccountField: FC<{
     return (
         <div className="p-3 bg-gray-100 rounded-lg flex items-center justify-between">
             <div className="max-w-xs overflow-hidden">
-                <p className="text-gray-700 text-md font-bold">Amount: {accounts.balance}</p>
+                <p className="text-gray-700 text-md font-bold">Amount: {balance}</p>
                 <p className="text-gray-700 text-sm truncate"
                    title={accounts.publicKey}>
                     {cleanKey(accounts.publicKey)}

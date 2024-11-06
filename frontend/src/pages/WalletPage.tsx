@@ -8,6 +8,7 @@ import {SecuredPage} from "./SecuredPage";
 import {CredentialsDto} from "../types/CredentialsDto";
 import {addKeyToLocalStorage} from "../utils/LocalStorageUtils";
 import ImportFileModal from "../componenets/organisms/ImportFileModal";
+import {ChooseHttpAddressButton} from "../componenets/organisms/ChooseHttpAddressButton";
 
 export const WalletPage: FC<{
     credentials?: CredentialsDto,
@@ -21,6 +22,8 @@ export const WalletPage: FC<{
         <SecuredPage credentials={credentials}>
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
                 <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                    <ChooseHttpAddressButton/>
+
                     <h2 className="text-2xl font-bold text-center text-gray-800">Wallet</h2>
 
                     <div className="flex space-x-2">

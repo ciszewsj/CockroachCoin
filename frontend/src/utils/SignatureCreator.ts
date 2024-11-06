@@ -1,7 +1,6 @@
 import forge from 'node-forge';
 
 export const createBase64Signature = (object: string, rsaPrivateKey: string): string => {
-    console.log(rsaPrivateKey)
     const privateKey = forge.pki.privateKeyFromPem(rsaPrivateKey);
     const md = forge.md.sha256.create();
     md.update(object, 'utf8');

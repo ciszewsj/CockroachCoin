@@ -15,18 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountsController {
 	private final AccountRepository accountRepository;
-
+	
 	@GetMapping
-	public List<AccountDto> getAccounts() {
-		log.debug("Request for get accounts");
-		return accountRepository.getAccounts();
-	}
-
-	@PostMapping("/{owner}")
-	public Account getAccount(@RequestHeader("signature") String signature,
-	                          @RequestBody(required = false) String publicKey,
-	                          @PathVariable String owner) {
-		log.debug("Request for get account [owner={}]", owner);
-		return accountRepository.findAccountOrCreate(owner, signature, publicKey);
+	public Account getAccount(@RequestBody(required = false) String publicKey) {
+		log.debug("Request for get account [publicKey={}]", publicKey);
+		return accountRepository.findAccount(publicKey);
 	}
 }

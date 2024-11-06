@@ -4,6 +4,7 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {WalletPage} from "./pages/WalletPage";
 import {CredentialsDto} from "./types/CredentialsDto";
 import {KeysObject} from "./types/KeysObject";
+import {HttpAddressProvider} from "./context/HttpAddressProvider";
 
 function App() {
 
@@ -11,13 +12,15 @@ function App() {
     const [keys, setKeys] = useState<KeysObject[]>([])
 
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path={"/"} element={<LoginPage setCredentials={setCredentials} setKeys={setKeys}/>}/>
-                <Route path={"/wallet"}
-                       element={<WalletPage credentials={credentials} setKeys={setKeys} keys={keys}/>}/>
-            </Routes>
-        </BrowserRouter>
+        <HttpAddressProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path={"/"} element={<LoginPage setCredentials={setCredentials} setKeys={setKeys}/>}/>
+                    <Route path={"/wallet"}
+                           element={<WalletPage credentials={credentials} setKeys={setKeys} keys={keys}/>}/>
+                </Routes>
+            </BrowserRouter>
+        </HttpAddressProvider>
     );
 }
 

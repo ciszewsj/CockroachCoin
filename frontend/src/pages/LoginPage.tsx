@@ -4,6 +4,7 @@ import {MainButton} from "../componenets/atoms/MainButton";
 import {useNavigate} from "react-router-dom";
 import {SecondaryButton} from "../componenets/atoms/SecondaryButton";
 import {createKeysInLocalStorage, readKeysFromLocalStorage} from "../utils/LocalStorageUtils";
+import {ChooseHttpAddressButton} from "../componenets/organisms/ChooseHttpAddressButton";
 
 export const LoginPage: FC<{
     setCredentials: any,
@@ -40,6 +41,7 @@ export const LoginPage: FC<{
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                <ChooseHttpAddressButton/>
                 <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
                 <form onSubmit={handleLogin} className="space-y-4">
                     <TextInputField value={username} onChange={(e) => setUsername(e.target.value)}
