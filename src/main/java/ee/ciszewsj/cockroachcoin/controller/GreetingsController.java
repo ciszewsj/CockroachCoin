@@ -10,6 +10,7 @@ import ee.ciszewsj.cockroachcoin.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.w3c.dom.NodeList;
@@ -27,8 +28,9 @@ public class GreetingsController {
 	private final AccountRepository accountRepository;
 
 	@GetMapping
-	public void greetings() {
+	public ResponseEntity<String> greetings() {
 		log.debug("Request for greetings");
+		return ResponseEntity.ok("Hello, welcome.");
 	}
 
 	@PostMapping

@@ -30,6 +30,7 @@ public class NodeService {
 	}
 
 	public List<Node> getNodeList() {
+		log.info("showing node list");
 		return nodes.entrySet().stream()
 				.map(entry -> new Node(entry.getKey(), entry.getValue()))
 				.toList();
