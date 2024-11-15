@@ -3,7 +3,7 @@ package ee.ciszewsj.cockroachcoin.controller;
 import ee.ciszewsj.cockroachcoin.data.AccountDto;
 import ee.ciszewsj.cockroachcoin.data.Node;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
-import ee.ciszewsj.cockroachcoin.data.response.CreateNodeResponse;
+import ee.ciszewsj.cockroachcoin.data.response.JoinNetworkResponse;
 import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.NodeService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.w3c.dom.NodeList;
 
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class GreetingsController {
 	}
 
 	@PostMapping
-	public CreateNodeResponse handshake(@Valid @RequestBody Node request) {
+	public JoinNetworkResponse handshake(@Valid @RequestBody Node request) {
 
 		log.debug("Handshake request [request={}]", request);
 		nodeService.registerNode(request);
@@ -42,6 +41,6 @@ public class GreetingsController {
 		List<Node> nodeList = nodeService.getNodeList();
 		List<Transaction> transactionList = transactionService.getTransactionList();
 		List<AccountDto> accountList = accountRepository.getAccounts();
-		return new CreateNodeResponse(transactionList, nodeList, accountList);
+		return new JoinNetworkResponse(transactionList, nodeList, accountList);
 	}
 }

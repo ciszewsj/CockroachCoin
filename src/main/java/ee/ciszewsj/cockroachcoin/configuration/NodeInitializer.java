@@ -1,10 +1,10 @@
 package ee.ciszewsj.cockroachcoin.configuration;
 
-import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.configuration.properties.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.Node;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
 import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
-import ee.ciszewsj.cockroachcoin.data.response.CreateNodeResponse;
+import ee.ciszewsj.cockroachcoin.data.response.JoinNetworkResponse;
 import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.CertificatesService;
 import ee.ciszewsj.cockroachcoin.service.NodeService;
@@ -32,11 +32,12 @@ public class NodeInitializer {
 	private final Clock clock;
 
 	public NodeInitializer(CertificatesFileStoreProperties properties,
-	                       TransactionService transactionService,
-	                       CertificatesService certificatesService,
-	                       AccountRepository accountRepository,
-	                       Clock clock,
-	                       NodeService nodeService) throws IOException, InterruptedException {
+                           TransactionService transactionService,
+                           CertificatesService certificatesService,
+                           AccountRepository accountRepository,
+                           Clock clock,
+                           NodeService nodeService
+	) throws IOException, InterruptedException {
 		this.properties = properties;
 		this.transactionService = transactionService;
 		this.certificatesService = certificatesService;
@@ -44,14 +45,13 @@ public class NodeInitializer {
 		this.nodeService = nodeService;
 		this.clock = clock;
 
-		if (properties.connectUrl() == null || properties.connectUrl().isEmpty()) {
+        if (properties.connectUrl() == null || properties.connectUrl().isEmpty()) {
 			initFirstTransaction();
 		} else {
 			getTransactions();
 		}
 		recalculateTransactions();
 	}
-
 
 	private void getTransactions() throws IOException, InterruptedException {
 		nodeService.registerNode(new Node("BASE", properties.connectUrl()));
@@ -69,7 +69,7 @@ public class NodeInitializer {
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
 		if (response.statusCode() == 200) {
-			CreateNodeResponse nodeResponse = Json.mapper().readValue(response.body(), CreateNodeResponse.class);
+			JoinNetworkResponse nodeResponse = Json.mapper().readValue(response.body(), JoinNetworkResponse.class);
 			log.info("Successfully read transactions from initial node [{}]", nodeResponse);
 			transactionService.addTransaction(nodeResponse.transactionList());
 			accountRepository.addAccounts(nodeResponse.accountList());
@@ -99,7 +99,7 @@ public class NodeInitializer {
 				certificatesService.verifyObjectWithSignature(transaction.sender(), new TransactionRequest(transaction.sender(), transaction.receiver(), transaction.amount()), transaction.signature());
 				isValid = true;
 			} catch (Exception e) {
-				log.warn("Could not validated transaction [{}]", transaction, e);
+				log.warn("Could not validate transaction [{}]", transaction, e);
 			}
 			if (isValid) {
 				accountRepository.findAccount(transaction.sender()).subAmount(transaction.amount());
@@ -107,4 +107,6 @@ public class NodeInitializer {
 			}
 		}
 	}
+
 }
+

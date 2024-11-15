@@ -6,9 +6,8 @@ import ee.ciszewsj.cockroachcoin.data.Transaction;
 
 import java.util.List;
 
-public record CreateNodeResponse(
+public record JoinNetworkResponse(
 		List<Transaction> transactionList,
-		List<Node> nodeList,
-		List<AccountDto> accountList
+		List<Node> nodeList
 ) {
 }

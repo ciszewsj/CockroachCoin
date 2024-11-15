@@ -1,4 +1,4 @@
-package ee.ciszewsj.cockroachcoin.configuration.properites;
+package ee.ciszewsj.cockroachcoin.configuration.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
