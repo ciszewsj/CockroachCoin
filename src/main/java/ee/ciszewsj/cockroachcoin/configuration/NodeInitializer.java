@@ -72,7 +72,6 @@ public class NodeInitializer {
 			JoinNetworkResponse nodeResponse = Json.mapper().readValue(response.body(), JoinNetworkResponse.class);
 			log.info("Successfully read transactions from initial node [{}]", nodeResponse);
 			transactionService.addTransaction(nodeResponse.transactionList());
-			accountRepository.addAccounts(nodeResponse.accountList());
 			for (Node node : nodeResponse.nodeList()) {
 				nodeService.registerNode(node);
 			}

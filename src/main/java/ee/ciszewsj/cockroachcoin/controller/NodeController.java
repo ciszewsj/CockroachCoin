@@ -8,8 +8,10 @@ import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.NodeService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
 import jakarta.servlet.ServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,23 +36,25 @@ public class NodeController {
 
 
 	@PostMapping("/join_network")
-	public JoinNetworkResponse registerNode(@RequestBody JoinNetworkRequest jnr, ServletRequest servletRequest) {
+	public ResponseEntity<JoinNetworkResponse> registerNode(@Valid @RequestBody JoinNetworkRequest jnr, ServletRequest servletRequest) {
 		String remoteAddress = servletRequest.getRemoteAddr();
 		String remoteHost = servletRequest.getRemoteHost();;
 		int remotePort = servletRequest.getRemotePort();
 
 		String requestedName = jnr.name();
 		String claimedAddress = jnr.address();
+		if (requestedName == null || requestedName.isEmpty() || claimedAddress == null || claimedAddress.isEmpty()) {
+			return new ResponseEntity<JoinNetworkResponse>(HttpStatus.NOT_ACCEPTABLE);
+		}
 
 		log.info("Gotten join request from " + remoteAddress + " (host: " + remoteHost + " ; port: "+ remotePort);
 		log.info("Node named: " + requestedName + "claims address " + claimedAddress);
 
+		if (nodeService.registerNode(new Node(requestedName, claimedAddress))) {
+			// Success
+			return new ResponseEntity<JoinNetworkResponse>(new JoinNetworkResponse(transactionService.getTransactionList(),nodeService.getNodeList()), HttpStatus.OK);
+		} else return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
 
-		// now, check if nothing already has this name or address
-
-		// later: add this node to a list of known nodes
-		log.info("gotten join network request");
-		return new JoinNetworkResponse(transactionService.getTransactionList(),nodeService.getNodeList()));
 
 	}
 }

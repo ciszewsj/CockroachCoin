@@ -40,7 +40,6 @@ public class GreetingsController {
 
 		List<Node> nodeList = nodeService.getNodeList();
 		List<Transaction> transactionList = transactionService.getTransactionList();
-		List<AccountDto> accountList = accountRepository.getAccounts();
-		return new JoinNetworkResponse(transactionList, nodeList, accountList);
+		return new JoinNetworkResponse(transactionList, nodeList);
 	}
 }

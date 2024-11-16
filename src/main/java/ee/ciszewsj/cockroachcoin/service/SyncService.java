@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -31,7 +29,7 @@ public class SyncService {
 					HttpRequest request;
 					try {
 						request = HttpRequest.newBuilder()
-								.uri(new URI(node.url() + "/api/v1/accounts/" + account.getName()))
+								.uri(new URI(node.address() + "/api/v1/accounts/" + account.getName()))
 								.header("Content-Type", "application/json")
 								.headers("signature", signature)
 								.POST(HttpRequest.BodyPublishers.ofString(publicKey))
