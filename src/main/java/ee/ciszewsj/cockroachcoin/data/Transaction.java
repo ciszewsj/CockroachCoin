@@ -1,6 +1,6 @@
 package ee.ciszewsj.cockroachcoin.data;
 
-public record Transaction(
+public record  Transaction(
 		long amount,
 		String sender,
 		String receiver,

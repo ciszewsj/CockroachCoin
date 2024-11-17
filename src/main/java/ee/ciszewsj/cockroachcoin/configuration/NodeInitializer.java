@@ -5,7 +5,6 @@ import ee.ciszewsj.cockroachcoin.data.Node;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
 import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import ee.ciszewsj.cockroachcoin.data.response.CreateNodeResponse;
-import ee.ciszewsj.cockroachcoin.service.AccountRepository;
 import ee.ciszewsj.cockroachcoin.service.CertificatesService;
 import ee.ciszewsj.cockroachcoin.service.NodeService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
@@ -27,20 +26,17 @@ public class NodeInitializer {
 	private final CertificatesFileStoreProperties properties;
 	private final TransactionService transactionService;
 	private final CertificatesService certificatesService;
-	private final AccountRepository accountRepository;
 	private final NodeService nodeService;
 	private final Clock clock;
 
 	public NodeInitializer(CertificatesFileStoreProperties properties,
 	                       TransactionService transactionService,
 	                       CertificatesService certificatesService,
-	                       AccountRepository accountRepository,
 	                       Clock clock,
 	                       NodeService nodeService) throws IOException, InterruptedException {
 		this.properties = properties;
 		this.transactionService = transactionService;
 		this.certificatesService = certificatesService;
-		this.accountRepository = accountRepository;
 		this.nodeService = nodeService;
 		this.clock = clock;
 
@@ -72,7 +68,6 @@ public class NodeInitializer {
 			CreateNodeResponse nodeResponse = Json.mapper().readValue(response.body(), CreateNodeResponse.class);
 			log.info("Successfully read transactions from initial node [{}]", nodeResponse);
 			transactionService.addTransaction(nodeResponse.transactionList());
-			accountRepository.addAccounts(nodeResponse.accountList());
 			for (Node node : nodeResponse.nodeList()) {
 				nodeService.registerNode(node);
 			}
@@ -91,7 +86,6 @@ public class NodeInitializer {
 			if (transaction.type() == Transaction.TYPE.GENESIS) {
 				continue;
 			} else if (transaction.type() == Transaction.TYPE.DEPOSIT) {
-				accountRepository.findAccount(transaction.receiver()).setBalance(transaction.amount());
 				continue;
 			}
 			boolean isValid = false;
@@ -102,8 +96,6 @@ public class NodeInitializer {
 				log.warn("Could not validated transaction [{}]", transaction, e);
 			}
 			if (isValid) {
-				accountRepository.findAccount(transaction.sender()).subAmount(transaction.amount());
-				accountRepository.findAccount(transaction.receiver()).addAmount(transaction.amount());
 			}
 		}
 	}

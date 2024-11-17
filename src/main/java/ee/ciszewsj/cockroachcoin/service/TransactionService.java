@@ -1,7 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import ee.ciszewsj.cockroachcoin.data.Account;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
 import io.swagger.v3.core.util.Json;
 import lombok.Getter;
@@ -22,8 +21,6 @@ import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.TRA
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
-	private final AccountRepository accountRepository;
-
 	private final Clock clock;
 
 	@Getter
@@ -31,8 +28,6 @@ public class TransactionService {
 
 	public void doDeposit(String receiver, long amount) {
 		try {
-			Account senderAccount = accountRepository.findAccount(receiver);
-			senderAccount.addAmount(amount);
 			transactionList.add(new Transaction(amount, "", receiver, null, calculatePreviousHash(), clock.millis(), Transaction.TYPE.DEPOSIT));
 		} catch (Exception e) {
 			log.error("Could not make deposit");
@@ -40,9 +35,7 @@ public class TransactionService {
 	}
 
 	public void doTransaction(String sender, String receiver, long amount, String signature) {
-		Account senderAccount = accountRepository.findAccount(sender);
-		Account reciverAccount = accountRepository.findAccount(receiver);
-		if (senderAccount.getBalance() >= amount) {
+		if (0 >= amount) {
 			String hash;
 			try {
 				hash = calculatePreviousHash();
@@ -51,8 +44,6 @@ public class TransactionService {
 				throw INTERNAL_SERVER_EXCEPTION;
 			}
 			transactionList.add(new Transaction(amount, sender, receiver, signature, hash, clock.millis(), Transaction.TYPE.TRANSFER));
-			senderAccount.subAmount(amount);
-			reciverAccount.addAmount(amount);
 			log.info("Do transaction [sender={}, receiver={}, amount={}]", sender, receiver, amount);
 		} else {
 			log.info("Could not do operation over limit [sender={}, receiver={}, amount={}]", sender, receiver, amount);

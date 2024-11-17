@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Account {
-	private final String name;
 	private long balance;
 
 	synchronized public void subAmount(long amount) {

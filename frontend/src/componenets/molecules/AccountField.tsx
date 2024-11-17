@@ -10,7 +10,6 @@ export const AccountField: FC<{
 
     const [balance, setBalance] = useState("NOT_READY")
 
-    console.log("add", address)
 
     useEffect(() => {
         setBalance("NOT_READY")
@@ -24,7 +23,7 @@ export const AccountField: FC<{
         })
             .then(response => response.json())
             .then(data => setBalance(data.balance))
-            .catch(error => setBalance('Error'));
+            .catch(_ => setBalance('Error'));
 
     }, [address]);
 
