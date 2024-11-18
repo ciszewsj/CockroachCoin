@@ -1,46 +1,84 @@
 package ee.ciszewsj.cockroachcoin.service;
 
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Slf4j
 @RequiredArgsConstructor
 public class BlockService {
 
-	int difficulty = 1;
-
+	@Getter
 	private final List<BlockDto> blockList;
+	private final List<MinerService> observers = new ArrayList<>();
 
+	private final CommunicationService communicationService;
 
-	public void mine() {
-		log.error("??? {}", blockList.size());
-		BlockDto lastBlock = blockList.getLast();
-		long retries = 0;
-		long maxRange = (long) Math.pow(2, 24);
-		long nonce;
-		String lastBlockHexHash = Integer.toHexString(lastBlock.hashCode());
-		String targetPrefix = "0".repeat(difficulty);
-
-
-		while (!lastBlockHexHash.startsWith(targetPrefix)) {
-			nonce = new Random().nextLong();
-			lastBlockHexHash = Integer.toHexString(lastBlock.hashCode());
-			retries++;
-
-			if (2 * retries > maxRange) {
-				maxRange *= 2;
-				log.error("RETRIES:{}, maxRange:{}, nonce:{}", retries, maxRange, nonce);
+	public boolean validateBlockChain() {
+		for (int i = 0; i < blockList.size() - 1; i++) {
+			if (!blockList.get(i).validateHash(blockList.get(i + 1).previousHash(), blockList.get(i + 1).previousNonce())) {
+				log.warn("INCORRECT HASH FOR {}", i);
+				return false;
 			}
 		}
-		log.error("BLOCK MINED");
+		return true;
+	}
+
+	public boolean validateWithNewElement(BlockDto newElem) {
+		List<BlockDto> newList = new ArrayList<>(blockList);
+		newList.add(newElem);
+		for (int i = 0; i < newList.size() - 1; i++) {
+			if (!newList.get(i).validateHash(newList.get(i + 1).previousHash(), newList.get(i + 1).previousNonce())) {
+				log.warn("INCORRECT HASH FOR {}", i);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void postNewBlockChain(List<BlockDto> blockChain) {
+		if (validateBlockChain()) {
+			if (blockChain.size() <= blockList.size()) {
+				log.error("SMALLER SIZE OF BLOCKCHAIN!");
+				throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+			}
+		}
+		for (int i = 0; i < blockChain.size() - 1; i++) {
+			if (!blockChain.get(i).validateHash(blockChain.get(i + 1).previousHash(), blockChain.get(i + 1).previousNonce())) {
+				log.error("NOT CORRECT!!!");
+				throw new IllegalStateException("INCORRECT HASH");
+			}
+		}
+		blockList.clear();
+		blockList.addAll(blockChain);
+		notifyObservers();
+	}
+
+	public synchronized void addNew(BlockDto dto) {
+		if (validateWithNewElement(dto)) {
+			blockList.add(dto);
+		}
+
+		notifyObservers();
+	}
+
+	public BlockDto getLast() {
+		return blockList.getLast();
+	}
+
+	public void addObserver(MinerService observer) {
+		observers.add(observer);
 	}
 
 
-	public void findNewChains() {
-
+	private void notifyObservers() {
+		for (MinerService observer : observers) {
+			observer.listUpdated();
+		}
+		communicationService.onBlockChange(blockList);
 	}
 }
