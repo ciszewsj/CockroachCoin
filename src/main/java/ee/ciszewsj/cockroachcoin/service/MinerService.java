@@ -12,7 +12,7 @@ public class MinerService {
 	private final BlockService blockService;
 
 	private Thread miningThread;
-	int difficulty = 6;
+	int difficulty = 5;
 
 	public MinerService(Clock clock, BlockService blockService) {
 		this.clock = clock;

@@ -16,14 +16,39 @@ public class BlockService {
 	private final List<BlockDto> blockList;
 	private final List<MinerService> observers = new ArrayList<>();
 
+	private final CommunicationService communicationService;
+
+	public boolean validateBlockChain() {
+		for (int i = 0; i < blockList.size() - 1; i++) {
+			if (!blockList.get(i).validateHash(blockList.get(i + 1).previousHash(), blockList.get(i + 1).previousNonce())) {
+				log.warn("INCORRECT HASH FOR {}", i);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean validateWithNewElement(BlockDto newElem) {
+		List<BlockDto> newList = new ArrayList<>(blockList);
+		newList.add(newElem);
+		for (int i = 0; i < newList.size() - 1; i++) {
+			if (!newList.get(i).validateHash(newList.get(i + 1).previousHash(), newList.get(i + 1).previousNonce())) {
+				log.warn("INCORRECT HASH FOR {}", i);
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public void postNewBlockChain(List<BlockDto> blockChain) {
-		if (blockChain.size() <= blockList.size()) {
-			log.error("SMALLER SIZE OF BLOCKCHAIN!");
-			throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+		if (validateBlockChain()) {
+			if (blockChain.size() <= blockList.size()) {
+				log.error("SMALLER SIZE OF BLOCKCHAIN!");
+				throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+			}
 		}
 		for (int i = 0; i < blockChain.size() - 1; i++) {
-			if (blockChain.get(i).validateHash(blockChain.get(i + 1).previousHash(), blockChain.get(i + 1).previousNonce())) {
+			if (!blockChain.get(i).validateHash(blockChain.get(i + 1).previousHash(), blockChain.get(i + 1).previousNonce())) {
 				log.error("NOT CORRECT!!!");
 				throw new IllegalStateException("INCORRECT HASH");
 			}
@@ -33,8 +58,11 @@ public class BlockService {
 		notifyObservers();
 	}
 
-	public void addNew(BlockDto dto) {
-		blockList.add(dto);
+	public synchronized void addNew(BlockDto dto) {
+		if (validateWithNewElement(dto)) {
+			blockList.add(dto);
+		}
+
 		notifyObservers();
 	}
 
@@ -51,5 +79,6 @@ public class BlockService {
 		for (MinerService observer : observers) {
 			observer.listUpdated();
 		}
+		communicationService.onBlockChange(blockList);
 	}
 }
