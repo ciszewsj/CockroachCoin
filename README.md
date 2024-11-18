@@ -3,9 +3,15 @@
 
 ### Uruchomienie programu
 Należy podać w program_arguments np. `--server.port=8086`, wówczas aplikacja wystartuje na `localhost:8086`.
+Konieczne jest również podanie jako argumentu wywołania adresu, do którego węzeł ma się później połączyć.
+
+Przykładowo:
+```
+--server.port=8086 --config.connectToUrl=http://localhost:8080
+```
 
 ### Przyłączenie węzła do sieci
-Należy do endpointa `/api/v1/join_network` wysłać zapytanie `POST` z adresem *parent_node*, do którego ma się przyłączyć węzeł.
+Należy do endpointa `/api/v1/join_network` wysłać zapytanie `POST`.
 Wtedy zostanie wysłany handshake i węzeł otrzyma od *parent_node* informacje o pozostałych węzłach.
 
 

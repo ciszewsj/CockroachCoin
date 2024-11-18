@@ -57,8 +57,10 @@ public class MinerService {
 	}
 
 	public void listUpdated() {
-		miningThread.interrupt();
-		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-		miningThread.start();
+		if (isMining && miningThread !=null) {
+			miningThread.interrupt();
+			miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+			miningThread.start();
+		}
 	}
 }

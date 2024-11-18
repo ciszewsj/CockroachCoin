@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Slf4j
@@ -19,6 +16,10 @@ import java.util.Map;
 public class NodeService {
 	private final ArrayList<Node> nodes = new ArrayList<>();
 	private final CertificatesFileStoreProperties properties;
+
+	public void setAsKnownNodes(List<Node> nodeList) {
+        nodes.addAll(nodeList);
+	}
 
 	public void registerNode(Node node) {
 		if (node.name().equals(properties.myName())) {

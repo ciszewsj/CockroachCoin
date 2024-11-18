@@ -10,6 +10,7 @@ import ee.ciszewsj.cockroachcoin.service.NodeService;
 import ee.ciszewsj.cockroachcoin.service.TransactionService;
 import io.swagger.v3.core.util.Json;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -28,6 +30,14 @@ public class NodeInitializer {
 	private final CertificatesService certificatesService;
 	private final NodeService nodeService;
 	private final Clock clock;
+
+	@Value("${config.isInit:false}")
+	private boolean isInitNode;
+
+	@Value("${server.port}")
+	private String myPort;
+	@Value("${config.name}")
+	private String myName;
 
 	public NodeInitializer(CertificatesFileStoreProperties properties,
 	                       TransactionService transactionService,
@@ -40,20 +50,27 @@ public class NodeInitializer {
 		this.nodeService = nodeService;
 		this.clock = clock;
 
-		if (properties.connectUrl() == null || properties.connectUrl().isEmpty()) {
-			initFirstTransaction();
-		} else {
-			getTransactions();
-		}
+
+		// this check will not work, because the value is injected after the constructor
+//		if (isInitNode) {
+//			log.info("Starting as INIT node, initializing first transaction");
+//			initFirstTransactionAndInitialize();
+//		} else {
+//			log.info("Starting as NOT an INIT node");
+////			getTransactions();
+//		}
 		recalculateTransactions();
 	}
 
 
-	private void getTransactions() throws IOException, InterruptedException {
-		nodeService.registerNode(new Node("BASE", properties.connectUrl()));
+	public void getTransactions() throws IOException, InterruptedException {
+		if (isInitNode) {
+			nodeService.registerNode(new Node("BASE", properties.connectUrl()));
+		}
 
 		HttpClient httpClient = HttpClient.newHttpClient();
-		String url = properties.connectUrl() + "/api/v1/greetings";
+		String url = properties.connectUrl() + "/api/v1/nodes/greetings";
+		String myUrl = "http://localhost:" + myPort;
 		Node thisNode = new Node(properties.myName(), properties.myUrl());
 		String jsonRequest = Json.mapper().writeValueAsString(thisNode);
 		HttpRequest request = HttpRequest.newBuilder()
@@ -67,7 +84,7 @@ public class NodeInitializer {
 		if (response.statusCode() == 200) {
 			CreateNodeResponse nodeResponse = Json.mapper().readValue(response.body(), CreateNodeResponse.class);
 			log.info("Successfully read transactions from initial node [{}]", nodeResponse);
-			transactionService.addTransaction(nodeResponse.transactionList());
+			transactionService.addTransactionList(nodeResponse.transactionList());
 			for (Node node : nodeResponse.nodeList()) {
 				nodeService.registerNode(node);
 			}
@@ -77,11 +94,14 @@ public class NodeInitializer {
 		}
 	}
 
-	private void initFirstTransaction() {
-		transactionService.addTransaction(List.of(new Transaction(0, null, null, null, null, clock.millis(), Transaction.TYPE.GENESIS)));
+	public void initFirstTransactionAndInitialize() {
+		ArrayList<Node> firstNodes = new ArrayList<>();
+		firstNodes.add(new Node("INIT", "http://localhost:"+myPort));
+		nodeService.setAsKnownNodes(firstNodes);
+		transactionService.addTransactionList(List.of(new Transaction(0, null, null, null, null, clock.millis(), Transaction.TYPE.GENESIS)));
 	}
 
-	private void recalculateTransactions() {
+	public void recalculateTransactions() {
 		for (Transaction transaction : transactionService.getTransactionList()) {
 			if (transaction.type() == Transaction.TYPE.GENESIS) {
 				continue;
