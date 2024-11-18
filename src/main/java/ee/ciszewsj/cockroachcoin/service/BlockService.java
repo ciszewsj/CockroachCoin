@@ -1,46 +1,55 @@
 package ee.ciszewsj.cockroachcoin.service;
 
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Slf4j
 @RequiredArgsConstructor
 public class BlockService {
 
-	int difficulty = 1;
-
+	@Getter
 	private final List<BlockDto> blockList;
+	private final List<MinerService> observers = new ArrayList<>();
 
 
-	public void mine() {
-		log.error("??? {}", blockList.size());
-		BlockDto lastBlock = blockList.getLast();
-		long retries = 0;
-		long maxRange = (long) Math.pow(2, 24);
-		long nonce;
-		String lastBlockHexHash = Integer.toHexString(lastBlock.hashCode());
-		String targetPrefix = "0".repeat(difficulty);
-
-
-		while (!lastBlockHexHash.startsWith(targetPrefix)) {
-			nonce = new Random().nextLong();
-			lastBlockHexHash = Integer.toHexString(lastBlock.hashCode());
-			retries++;
-
-			if (2 * retries > maxRange) {
-				maxRange *= 2;
-				log.error("RETRIES:{}, maxRange:{}, nonce:{}", retries, maxRange, nonce);
+	public void postNewBlockChain(List<BlockDto> blockChain) {
+		if (blockChain.size() <= blockList.size()) {
+			log.error("SMALLER SIZE OF BLOCKCHAIN!");
+			throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+		}
+		for (int i = 0; i < blockChain.size() - 1; i++) {
+			if (blockChain.get(i).validateHash(blockChain.get(i + 1).previousHash(), blockChain.get(i + 1).previousNonce())) {
+				log.error("NOT CORRECT!!!");
+				throw new IllegalStateException("INCORRECT HASH");
 			}
 		}
-		log.error("BLOCK MINED");
+		blockList.clear();
+		blockList.addAll(blockChain);
+		notifyObservers();
+	}
+
+	public void addNew(BlockDto dto) {
+		blockList.add(dto);
+		notifyObservers();
+	}
+
+	public BlockDto getLast() {
+		return blockList.getLast();
+	}
+
+	public void addObserver(MinerService observer) {
+		observers.add(observer);
 	}
 
 
-	public void findNewChains() {
-
+	private void notifyObservers() {
+		for (MinerService observer : observers) {
+			observer.listUpdated();
+		}
 	}
 }
