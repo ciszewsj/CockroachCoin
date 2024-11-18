@@ -32,10 +32,10 @@ public class GreetingsController {
 	@PostMapping
 	public CreateNodeResponse handshake(@Valid @RequestBody Node request) {
 
-		log.debug("Handshake request [request={}]", request);
+		log.info("Handshake request [request={}]", request);
 		nodeService.registerNode(request);
 
-		List<Node> nodeList = nodeService.getNodeList();
+		ArrayList<Node> nodeList = nodeService.getNodeList();
 		List<Transaction> transactionList = transactionService.getTransactionList();
 		return new CreateNodeResponse(transactionList, nodeList, new ArrayList<>());
 	}

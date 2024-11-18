@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.ArrayList;
 
 @Slf4j
 @Validated
@@ -20,7 +20,7 @@ public class NodeController {
 	private final NodeService nodeService;
 
 	@GetMapping
-	public List<Node> nodes() {
+	public ArrayList<Node> nodes() {
 		return nodeService.getNodeList();
 	}
 }
