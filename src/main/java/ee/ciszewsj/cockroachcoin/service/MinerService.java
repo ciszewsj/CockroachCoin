@@ -14,17 +14,31 @@ public class MinerService {
 	private Thread miningThread;
 	int difficulty = 5;
 
+	private boolean isMining = false;
+
+	public boolean startOrStopMining() {
+
+		if (!isMining) {
+			miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+			miningThread.start();
+		} else {
+			miningThread.interrupt();
+		}
+		isMining = !isMining;
+		return isMining;
+	}
+
 	public MinerService(Clock clock, BlockService blockService) {
 		this.clock = clock;
 		this.blockService = blockService;
 		this.blockService.addObserver(this);
-		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-		miningThread.start();
+//		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+//		miningThread.start();
 	}
 
 	public void mineBlock(BlockDto previousBlock) {
 		long nonce = 0;
-		while (true) {
+		while (isMining) {
 			String hash = previousBlock.calculateHash(nonce);
 			if (hash.startsWith("0".repeat(difficulty))) {
 
@@ -43,8 +57,10 @@ public class MinerService {
 	}
 
 	public void listUpdated() {
-		miningThread.interrupt();
-		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-		miningThread.start();
+		if (isMining && miningThread !=null) {
+			miningThread.interrupt();
+			miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+			miningThread.start();
+		}
 	}
 }

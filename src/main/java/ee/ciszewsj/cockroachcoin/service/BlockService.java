@@ -44,7 +44,8 @@ public class BlockService {
 		if (validateBlockChain()) {
 			if (blockChain.size() <= blockList.size()) {
 				log.error("SMALLER SIZE OF BLOCKCHAIN!");
-				throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+//				throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
+				return;
 			}
 		}
 		for (int i = 0; i < blockChain.size() - 1; i++) {

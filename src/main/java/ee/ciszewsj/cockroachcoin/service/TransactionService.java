@@ -51,8 +51,12 @@ public class TransactionService {
 		}
 	}
 
-	public void addTransaction(List<Transaction> list) {
+	public void addTransactionList(List<Transaction> list) {
 		transactionList.addAll(list);
+	}
+
+	public void addSingleTransaction(Transaction transaction) {
+		transactionList.add(transaction);
 	}
 
 

@@ -7,29 +7,38 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NodeService {
-	private final Map<String, String> nodes = new HashMap<>();
+	private final ArrayList<Node> nodes = new ArrayList<>();
 	private final CertificatesFileStoreProperties properties;
+
+	public void setAsKnownNodes(List<Node> nodeList) {
+        nodes.addAll(nodeList);
+	}
 
 	public void registerNode(Node node) {
 		if (node.name().equals(properties.myName())) {
 			return;
 		}
-		nodes.put(node.name(), node.url());
+		for (Node existingNode: nodes) {
+			if (existingNode.name().equals(node.name())
+					|| existingNode.url().equals(node.url())) {
+				log.warn("Name or url already taken, cannot register node");
+				return;
+			}
+
+		}
+
+		nodes.add(new Node(node.name(), node.url()));
 		log.info("Node register successfully [node={}]", node);
 	}
 
-	public List<Node> getNodeList() {
-		return nodes.entrySet().stream()
-				.map(entry -> new Node(entry.getKey(), entry.getValue()))
-				.toList();
+	public ArrayList<Node> getNodeList() {
+		return nodes;
 	}
 }
