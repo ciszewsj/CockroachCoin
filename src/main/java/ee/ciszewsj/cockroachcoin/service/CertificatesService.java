@@ -1,6 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
-import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.configuration.properites.BlockChainProperties;
 import io.swagger.v3.core.util.Json;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +22,11 @@ import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.UNA
 
 @Slf4j
 @Service
-@EnableConfigurationProperties(CertificatesFileStoreProperties.class)
+@EnableConfigurationProperties(BlockChainProperties.class)
 public class CertificatesService {
-	private final CertificatesFileStoreProperties properties;
+	private final BlockChainProperties properties;
 
-	public CertificatesService(CertificatesFileStoreProperties properties) {
+	public CertificatesService(BlockChainProperties properties) {
 		Security.addProvider(new BouncyCastleProvider());
 		this.properties = properties;
 	}

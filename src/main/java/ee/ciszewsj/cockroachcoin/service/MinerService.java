@@ -1,5 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
+import ee.ciszewsj.cockroachcoin.configuration.properites.BlockChainProperties;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,33 +13,21 @@ public class MinerService {
 	private final BlockService blockService;
 
 	private Thread miningThread;
-	int difficulty = 5;
+	private final int difficulty;
 
-	private boolean isMining = false;
 
-	public boolean startOrStopMining() {
-
-		if (!isMining) {
-			miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-			miningThread.start();
-		} else {
-			miningThread.interrupt();
-		}
-		isMining = !isMining;
-		return isMining;
-	}
-
-	public MinerService(Clock clock, BlockService blockService) {
+	public MinerService(Clock clock, BlockService blockService, BlockChainProperties properties) {
+		this.difficulty = properties.difficulty();
 		this.clock = clock;
 		this.blockService = blockService;
 		this.blockService.addObserver(this);
-//		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-//		miningThread.start();
+		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+		miningThread.start();
 	}
 
 	public void mineBlock(BlockDto previousBlock) {
 		long nonce = 0;
-		while (isMining) {
+		while (true) {
 			String hash = previousBlock.calculateHash(nonce);
 			if (hash.startsWith("0".repeat(difficulty))) {
 
@@ -49,7 +38,7 @@ public class MinerService {
 						hash
 				);
 				blockService.addNew(newBlock);
-				log.error("BLOCK MINED {} >>> {}", newBlock.index(), hash);
+				log.info("BLOCK MINED [index={}, hash={}]", newBlock.index(), hash);
 				break;
 			}
 			nonce++;
@@ -57,10 +46,8 @@ public class MinerService {
 	}
 
 	public void listUpdated() {
-		if (isMining && miningThread !=null) {
-			miningThread.interrupt();
-			miningThread = new Thread(() -> mineBlock(blockService.getLast()));
-			miningThread.start();
-		}
+		miningThread.interrupt();
+		miningThread = new Thread(() -> mineBlock(blockService.getLast()));
+		miningThread.start();
 	}
 }

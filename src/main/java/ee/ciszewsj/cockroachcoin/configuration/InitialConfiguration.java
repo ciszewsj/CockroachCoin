@@ -1,28 +1,26 @@
 package ee.ciszewsj.cockroachcoin.configuration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.configuration.properites.BlockChainProperties;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import ee.ciszewsj.cockroachcoin.data.Node;
+import ee.ciszewsj.cockroachcoin.data.response.CreateNodeResponse;
 import ee.ciszewsj.cockroachcoin.service.BlockService;
 import ee.ciszewsj.cockroachcoin.service.CommunicationService;
+import ee.ciszewsj.cockroachcoin.service.GreetingsClient;
+import ee.ciszewsj.cockroachcoin.service.NodeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Configuration
-public class BlockConfiguration {
+public class InitialConfiguration {
+
 
 	@Bean
 	public BlockService blockService(List<BlockDto> blockList, CommunicationService communicationService) {
@@ -40,17 +38,20 @@ public class BlockConfiguration {
 
 	@Bean
 	@ConditionalOnProperty(prefix = "certificates", value = "connect-url")
-	public List<BlockDto> blockListFromAnother(CertificatesFileStoreProperties properties) throws IOException, InterruptedException {
-		HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create(properties.connectUrl() + "/api/v1/block"))
-				.header("Accept", "application/json")
-				.GET()
-				.build();
+	public List<BlockDto> blockListFromAnother(BlockChainProperties properties, GreetingsClient greetingsClient, NodeService nodeService) throws Exception {
 
-		HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-		ObjectMapper objectMapper = new ObjectMapper();
-		log.info("STATUS GET_BLOCKCHAIN ? {}", response.statusCode());
-		return objectMapper.readValue(response.body(), new TypeReference<>() {
-		});
+		nodeService.registerNode(new Node("INIT", properties.connectUrl()));
+		CreateNodeResponse response = greetingsClient.join_network(properties.connectUrl());
+
+		List<Node> anotherNodes = response.nodeList().stream().filter(s -> !(s.url().equals(properties.myUrl()) || s.url().equals(properties.connectUrl()))).toList();
+		for (Node next : anotherNodes) {
+			try {
+				greetingsClient.join_network(next.url());
+				nodeService.registerNode(new Node(next.name(), next.url()));
+			} catch (Exception e) {
+				log.error("Could not register node [url={}]", next);
+			}
+		}
+		return response.blocks();
 	}
 }

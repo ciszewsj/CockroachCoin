@@ -1,6 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
-import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.configuration.properites.BlockChainProperties;
 import ee.ciszewsj.cockroachcoin.data.Node;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +15,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class NodeService {
 	private final ArrayList<Node> nodes = new ArrayList<>();
-	private final CertificatesFileStoreProperties properties;
+	private final BlockChainProperties properties;
 
-	public void setAsKnownNodes(List<Node> nodeList) {
-        nodes.addAll(nodeList);
-	}
 
 	public void registerNode(Node node) {
 		if (node.name().equals(properties.myName())) {
