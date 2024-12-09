@@ -2,9 +2,7 @@ package ee.ciszewsj.cockroachcoin.service;
 
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
-import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -45,22 +43,31 @@ public class AccountService {
 		balances = temporaryMap;
 	}
 
-	@Synchronized
-	public void doTransaction(Transaction request) {
+	public synchronized void doTransaction(Transaction request) {
 		Map<String, Long> temporaryMap = new HashMap<>(balances);
+
 		for (var sender : request.senders()) {
-			var balance = temporaryMap.getOrDefault(sender.publicKey(), 0L);
+			long balance = temporaryMap.getOrDefault(sender.publicKey(), 0L);
 			balance -= sender.amount();
+
 			if (balance < 0) {
 				throw new IllegalStateException("AMOUNT ON ACCOUNT < 0");
 			}
+
 			temporaryMap.put(sender.publicKey(), balance);
+			log.info("Update balance for sender [balance={}, publicKey={}]", balance, sender.publicKey());
 		}
+
 		for (var receiver : request.receivers()) {
-			var balance = temporaryMap.getOrDefault(receiver.publicKey(), 0L);
+			long balance = temporaryMap.getOrDefault(receiver.publicKey(), 0L);
 			balance += receiver.amount();
+
 			temporaryMap.put(receiver.publicKey(), balance);
+			log.info("Update balance for receiver [balance={}, publicKey={}]", balance, receiver.publicKey());
 		}
-		balances = temporaryMap;
+
+		balances.clear();
+		balances.putAll(temporaryMap);
 	}
+
 }

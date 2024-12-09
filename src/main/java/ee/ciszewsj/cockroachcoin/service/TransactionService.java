@@ -27,20 +27,29 @@ public class TransactionService {
 			throw new IllegalStateException("COULD NOT MAKE TRANSACTION YET");
 		}
 
+		long inTransaction = request.senders().stream().mapToLong(TransactionRequest.FromTransactionRequest::amount).sum();
+		long outTransaction = request.receivers().stream().mapToLong(TransactionRequest.ToTransactionRequest::amount).sum();
+
+		if (inTransaction != outTransaction) {
+			throw new IllegalStateException("IN != OUT");
+		}
+
 		BlockDto block = blockService.getLast();
 		Transaction lastTransaction = block.transactions().getLast();
 
 		List<FromTransactionField> from = request.senders().stream().map(
 				sender -> new FromTransactionField(sender.senderKey(), sender.amount(), sender.signature())
 		).toList();
-		List<ToTransactionField> to = request.senders().stream().map(
-				sender -> new ToTransactionField(sender.senderKey(), sender.amount())
+
+		List<ToTransactionField> to = request.receivers().stream().map(
+				receiver -> new ToTransactionField(receiver.senderKey(), receiver.amount())
 		).toList();
 
 		Transaction newTransaction = new Transaction(lastTransaction.index() + 1, from, to, lastTransaction.calculateHash(), clock.millis(), Transaction.TYPE.TRANSFER);
 		accountService.doTransaction(newTransaction);
 		block.transactions().add(newTransaction);
 		minerService.listUpdated();
+		log.info("Successful do transaction [{}]", request);
 
 	}
 

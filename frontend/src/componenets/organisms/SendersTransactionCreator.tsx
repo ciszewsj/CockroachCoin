@@ -1,12 +1,15 @@
-import { AddButton } from "../atoms/AddButton";
-import { RemoveButton } from "../atoms/RemoveButton";
-import React, { FC, useState, useEffect } from "react";
-import { SenderCreatorDto } from "../../types/SenderCreatorDto";
-import { KeysObject } from "../../types/KeysObject";
-import { cleanKey } from "../../utils/ClearKey";
+import {AddButton} from "../atoms/AddButton";
+import {RemoveButton} from "../atoms/RemoveButton";
+import React, {FC, useState, useEffect, Dispatch, SetStateAction} from "react";
+import {SenderCreatorDto} from "../../types/SenderCreatorDto";
+import {KeysObject} from "../../types/KeysObject";
+import {cleanKey} from "../../utils/ClearKey";
 
-export const SendersTransactionCreator: FC<{ keys: KeysObject[] }> = ({ keys }) => {
-    const [senders, setSenders] = useState<SenderCreatorDto[]>([]);
+export const SendersTransactionCreator: FC<{
+    keys: KeysObject[],
+    senders: SenderCreatorDto[],
+    setSenders: Dispatch<SetStateAction<SenderCreatorDto[]>>
+}> = ({keys, setSenders, senders}) => {
 
     useEffect(() => {
         if (keys.length > 0) {
@@ -64,7 +67,7 @@ export const SendersTransactionCreator: FC<{ keys: KeysObject[] }> = ({ keys }) 
                                             publicKey: selectedKey.publicKey,
                                             privateKey: selectedKey.privateKey,
                                         }
-                                        : { publicKey: "", privateKey: "" },
+                                        : {publicKey: "", privateKey: ""},
                                 };
                                 setSenders(updatedSenders);
                             }}
@@ -98,7 +101,7 @@ export const SendersTransactionCreator: FC<{ keys: KeysObject[] }> = ({ keys }) 
                             value={sender.amount}
                             onChange={(e) => {
                                 const updatedSenders = [...senders];
-                                updatedSenders[id] = { ...sender, amount: Number(e.target.value) };
+                                updatedSenders[id] = {...sender, amount: Number(e.target.value)};
                                 setSenders(updatedSenders);
                             }}
                         />

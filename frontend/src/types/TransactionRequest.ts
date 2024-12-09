@@ -1,5 +1,15 @@
 export interface TransactionRequest {
-    sender: string,
-    receiver: string,
+    senders: Sender[],
+    receivers: Receivers[],
+}
+
+export interface Sender {
+    senderKey: string,
     amount: number,
+    signature: string
+}
+
+export interface Receivers {
+    senderKey: string,
+    amount: number
 }

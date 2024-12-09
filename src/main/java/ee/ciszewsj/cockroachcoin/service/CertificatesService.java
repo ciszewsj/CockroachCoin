@@ -34,6 +34,7 @@ public class CertificatesService {
 		for (var senderTransaction : request.senders()) {
 			verifyObjectWithSignature(senderTransaction.senderKey(), Long.toString(senderTransaction.amount()), senderTransaction.signature());
 		}
+		log.info("Successful verify transaction with keys");
 	}
 
 	public void verifyObjectWithSignature(String ownerKey, Object object, String encodedSignature) {
@@ -74,15 +75,13 @@ public class CertificatesService {
 	}
 
 	private PublicKey readPublicKey(String ownerKey) throws Exception {
-		KeyFactory factory = KeyFactory.getInstance("RSA");
+		String publicKeyPEM = ownerKey.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "");
 
-		try (Reader keyReader = new StringReader(ownerKey);
-		     PemReader pemReader = new PemReader(keyReader)) {
+		byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
 
-			PemObject pemObject = pemReader.readPemObject();
-			byte[] content = pemObject.getContent();
-			X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(content);
-			return factory.generatePublic(pubKeySpec);
-		}
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+		X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+		return keyFactory.generatePublic(keySpec);
 	}
 }
