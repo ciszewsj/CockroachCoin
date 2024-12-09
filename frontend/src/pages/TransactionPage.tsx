@@ -26,7 +26,7 @@ export const TransactionPage: FC<{
                     }}>
                         Wallet
                     </SecondaryButton>
-                    <SendersTransactionCreator/>
+                    <SendersTransactionCreator keys={keys}/>
                     <ReceiversTransactionCreator/>
                     <MainButton onClick={() => {
                         navigate("/wallet")

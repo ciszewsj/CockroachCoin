@@ -1,6 +1,7 @@
 import {FC, useContext, useEffect, useState} from "react";
 import {AccountDetails} from "../../types/AccountDetails";
 import {HttpAddressContext} from "../../context/HttpAddressProvider";
+import {cleanKey} from "../../utils/ClearKey";
 
 export const AccountField: FC<{
     accounts: AccountDetails
@@ -27,11 +28,7 @@ export const AccountField: FC<{
 
     }, [accounts.publicKey, address]);
 
-    const cleanKey = (key: string) => {
-        return key.replace(/-----BEGIN PUBLIC KEY-----/g, '')
-            .replace(/-----END PUBLIC KEY-----/g, '')
-            .replace(/\s+/g, '')
-    }
+
 
     const exportKey = () => {
         const content = accounts.privateKey;
