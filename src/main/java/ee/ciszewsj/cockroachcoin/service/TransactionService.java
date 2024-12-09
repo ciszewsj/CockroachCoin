@@ -20,6 +20,7 @@ public class TransactionService {
 	private final AccountService accountService;
 	private final BlockService blockService;
 	private final MinerService minerService;
+	private final CommunicationService communicationService;
 
 	public void doTransaction(TransactionRequest request) {
 		if (blockService.getBlockList().size() < 2) {
@@ -69,6 +70,7 @@ public class TransactionService {
 		accountService.doTransaction(transaction);
 		blockDto.transactions().add(transaction);
 		log.info("Successful do transaction [{}]", transaction);
+		communicationService.onNewTransaction(transaction);
 	}
 
 }

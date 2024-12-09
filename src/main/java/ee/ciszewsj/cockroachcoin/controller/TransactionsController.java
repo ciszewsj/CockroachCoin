@@ -37,7 +37,8 @@ public class TransactionsController {
 	}
 
 	@PostMapping("/new")
-	public void newTransaction(Transaction transaction) {
+	public void newTransaction(@RequestBody Transaction transaction) {
+		log.info("Request for new transaction [{}]", transaction);
 		transactionService.newTransaction(transaction);
 	}
 }

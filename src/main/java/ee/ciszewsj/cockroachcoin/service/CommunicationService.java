@@ -2,6 +2,7 @@ package ee.ciszewsj.cockroachcoin.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import ee.ciszewsj.cockroachcoin.data.Transaction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,26 @@ public class CommunicationService {
 									.uri(URI.create(node.url() + "/api/v1/block/new"))
 									.header("Content-Type", "application/json")
 									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
+									.build();
+							httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+						} catch (Exception e) {
+							log.error("ERROR", e);
+						}
+					}
+				}
+		);
+	}
+
+	public void onNewTransaction(Transaction transaction) {
+		nodeService.getNodeList().forEach(
+				node -> {
+					String myUrl = "http://localhost:" + myPort;
+					if (!(node.url().equals(myUrl))) {
+						try {
+							HttpRequest request = HttpRequest.newBuilder()
+									.uri(URI.create(node.url() + "/api/v1/transactions/new"))
+									.header("Content-Type", "application/json")
+									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(transaction)))
 									.build();
 							httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 						} catch (Exception e) {
