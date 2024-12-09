@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Block} from "../types/Block";
 import {MainButton} from "../componenets/atoms/MainButton";
-import {SecondaryButton} from "../componenets/atoms/SecondaryButton";
 import {useNavigate} from "react-router-dom";
 
 export const BlockChainPage = () => {
@@ -37,18 +36,11 @@ export const BlockChainPage = () => {
                 <div>
                     <h2 className="text-2xl font-bold text-center text-gray-800">Blocks</h2>
                 </div>
-                <div className="flex space-x-2">
-                    <MainButton onClick={() => {
-                        navigate("/wallet")
-                    }}>
-                        Wallet
-                    </MainButton>
-                    <SecondaryButton onClick={() => {
-                        navigate("/transaction")
-                    }}>
-                        Do transaction
-                    </SecondaryButton>
-                </div>
+                <MainButton onClick={() => {
+                    navigate("/wallet")
+                }}>
+                    Wallet
+                </MainButton>
                 {
                     blocks.map((elem) => (
                         <div
