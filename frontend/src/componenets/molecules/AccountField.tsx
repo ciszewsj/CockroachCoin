@@ -25,7 +25,7 @@ export const AccountField: FC<{
             .then(data => setBalance(data.balance))
             .catch(_ => setBalance('Error'));
 
-    }, [address]);
+    }, [accounts.publicKey, address]);
 
     const cleanKey = (key: string) => {
         return key.replace(/-----BEGIN PUBLIC KEY-----/g, '')
