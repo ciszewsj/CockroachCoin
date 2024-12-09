@@ -53,7 +53,6 @@ public class CommunicationService {
 								.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(transaction)))
 								.build();
 						httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-						log.info("Czy to dziala ????");
 					} catch (Exception e) {
 						log.error("ERROR", e);
 					}
