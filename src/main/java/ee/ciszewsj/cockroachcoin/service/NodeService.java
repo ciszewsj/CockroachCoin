@@ -17,6 +17,12 @@ public class NodeService {
 	private final ArrayList<Node> nodes = new ArrayList<>();
 	private final CertificatesFileStoreProperties properties;
 
+	public void register(Node node) {
+		if (!nodes.contains(node)) {
+			nodes.add(node);
+		}
+	}
+
 	public ArrayList<Node> getNodeList() {
 		return nodes;
 	}

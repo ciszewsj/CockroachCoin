@@ -36,7 +36,7 @@ public class CommunicationService {
 									.header("Content-Type", "application/json")
 									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
 									.build();
-							httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+							httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 						} catch (Exception e) {
 							log.error("ERROR", e);
 						}

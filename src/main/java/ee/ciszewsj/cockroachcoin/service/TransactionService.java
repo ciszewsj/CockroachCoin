@@ -22,7 +22,6 @@ public class TransactionService {
 	private final MinerService minerService;
 
 	public void doTransaction(TransactionRequest request) {
-
 		if (blockService.getBlockList().size() < 2) {
 			throw new IllegalStateException("COULD NOT MAKE TRANSACTION YET");
 		}
@@ -55,6 +54,21 @@ public class TransactionService {
 
 	public void newTransaction(Transaction transaction) {
 
+		long inTransaction = transaction.senders().stream().mapToLong(FromTransactionField::amount).sum();
+		long outTransaction = transaction.receivers().stream().mapToLong(ToTransactionField::amount).sum();
+
+		if (inTransaction != outTransaction) {
+			throw new IllegalStateException("IN != OUT");
+		}
+
+		BlockDto blockDto = blockService.getLast();
+		Transaction last = blockDto.transactions().getLast();
+		if (!transaction.prev_hash().equals(last.calculateHash())) {
+			throw new IllegalStateException("Wrong transaction!");
+		}
+		accountService.doTransaction(transaction);
+		blockDto.transactions().add(transaction);
+		log.info("Successful do transaction [{}]", transaction);
 	}
 
 }

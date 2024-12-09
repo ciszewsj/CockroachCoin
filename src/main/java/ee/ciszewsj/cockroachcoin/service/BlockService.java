@@ -61,8 +61,12 @@ public class BlockService {
 		if (validateBlockChain(newBlockList)) {
 			blockList = newBlockList;
 			accountService.doTransaction(blockDto.transactions().getFirst());
+			blockList = newBlockList;
+			log.error("Add new block from another source [block={}]", blockDto);
 			communicationService.onNewBlock(blockDto);
 			notifyObservers();
+		} else {
+			log.error("Wrong block [block={}]", blockDto);
 		}
 	}
 
@@ -72,18 +76,17 @@ public class BlockService {
 				log.error("SMALLER SIZE OF BLOCKCHAIN!");
 				return;
 			}
-		}
-		for (int i = 0; i < blockChain.size() - 1; i++) {
-			if (!blockChain.get(i).validateHash(blockChain.get(i + 1).previousHash(), blockChain.get(i + 1).previousNonce())) {
-				log.error("NOT CORRECT!!!");
-				throw new IllegalStateException("INCORRECT HASH");
-			}
+		} else {
+			log.error("BLOCKCHAIN NOT CORRECT!!!");
+			throw new IllegalStateException("INCORRECT HASH");
+
 		}
 		if (blockList.getFirst() != blockChain.getFirst()) {
 			throw new IllegalStateException("THIS IS ANOTHER CRYPTO!!!");
 		}
 		blockList.clear();
 		blockList.addAll(blockChain);
+		log.debug("Change blockchain successfully [blockChain={}]", blockChain);
 		accountService.recalculate(blockChain);
 		notifyObservers();
 	}
