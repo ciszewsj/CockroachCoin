@@ -53,4 +53,8 @@ public class TransactionService {
 
 	}
 
+	public void newTransaction(Transaction transaction) {
+
+	}
+
 }

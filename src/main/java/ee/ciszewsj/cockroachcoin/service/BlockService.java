@@ -1,6 +1,7 @@
 package ee.ciszewsj.cockroachcoin.service;
 
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import ee.ciszewsj.cockroachcoin.data.Transaction;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,12 +14,19 @@ import java.util.List;
 public class BlockService {
 
 	@Getter
-	private final List<BlockDto> blockList;
+	private List<BlockDto> blockList;
 	private final List<MinerService> observers = new ArrayList<>();
 
 	private final CommunicationService communicationService;
+	private final AccountService accountService;
 
-	public boolean validateBlockChain() {
+	public BlockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService) {
+		this.blockList = blockList;
+		this.communicationService = communicationService;
+		this.accountService = accountService;
+	}
+
+	public static boolean validateBlockChain(List<BlockDto> blockList) {
 		for (int i = 0; i < blockList.size() - 1; i++) {
 			if (!blockList.get(i).validateHash(blockList.get(i + 1).previousHash(), blockList.get(i + 1).previousNonce())) {
 				log.warn("INCORRECT HASH FOR {}", i);
@@ -40,8 +48,26 @@ public class BlockService {
 		return true;
 	}
 
+	public void postNewBlock(BlockDto blockDto) {
+		if (!(blockDto.transactions().size() == 1
+				&& blockDto.transactions().getFirst().type() == Transaction.TYPE.GENESIS
+				&& blockDto.transactions().getFirst().senders().isEmpty()
+				&& blockDto.transactions().getFirst().receivers().size() == 1
+		)) {
+			throw new IllegalStateException("NOT VALID BLOCK");
+		}
+		var newBlockList = new ArrayList<>(blockList);
+		newBlockList.add(blockDto);
+		if (validateBlockChain(newBlockList)) {
+			blockList = newBlockList;
+			accountService.doTransaction(blockDto.transactions().getFirst());
+			communicationService.onNewBlock(blockDto);
+			notifyObservers();
+		}
+	}
+
 	public void postNewBlockChain(List<BlockDto> blockChain) {
-		if (validateBlockChain()) {
+		if (validateBlockChain(blockList)) {
 			if (blockChain.size() <= blockList.size()) {
 				log.error("SMALLER SIZE OF BLOCKCHAIN!");
 				return;
@@ -54,15 +80,18 @@ public class BlockService {
 			}
 		}
 		if (blockList.getFirst() != blockChain.getFirst()) {
-			blockList.clear();
+			throw new IllegalStateException("THIS IS ANOTHER CRYPTO!!!");
 		}
+		blockList.clear();
 		blockList.addAll(blockChain);
+		accountService.recalculate(blockChain);
 		notifyObservers();
 	}
 
 	public synchronized void addNew(BlockDto dto) {
 		if (validateWithNewElement(dto)) {
 			blockList.add(dto);
+			communicationService.onNewBlock(dto);
 		}
 
 		notifyObservers();
@@ -81,6 +110,5 @@ public class BlockService {
 		for (MinerService observer : observers) {
 			observer.listUpdated();
 		}
-		communicationService.onBlockChange(blockList);
 	}
 }

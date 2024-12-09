@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import ee.ciszewsj.cockroachcoin.service.AccountService;
 import ee.ciszewsj.cockroachcoin.service.BlockService;
 import ee.ciszewsj.cockroachcoin.service.CommunicationService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,8 @@ import java.util.List;
 public class BlockConfiguration {
 
 	@Bean
-	public BlockService blockService(List<BlockDto> blockList, CommunicationService communicationService) {
-		return new BlockService(blockList, communicationService);
+	public BlockService blockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService) {
+		return new BlockService(blockList, communicationService, accountService);
 	}
 
 	@Bean

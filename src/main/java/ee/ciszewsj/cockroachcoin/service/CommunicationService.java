@@ -21,17 +21,35 @@ public class CommunicationService {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final HttpClient httpClient = HttpClient.newHttpClient();
 
-	@Value("${config.name}")
-	private String myName;
 	@Value("${server.port}")
 	private String myPort;
 
+
+	public void onNewBlock(BlockDto blockDto) {
+		nodeService.getNodeList().forEach(
+				node -> {
+					String myUrl = "http://localhost:" + myPort;
+					if (!(node.url().equals(myUrl))) {
+						try {
+							HttpRequest request = HttpRequest.newBuilder()
+									.uri(URI.create(node.url() + "/api/v1/block/new"))
+									.header("Content-Type", "application/json")
+									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
+									.build();
+							httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+						} catch (Exception e) {
+							log.error("ERROR", e);
+						}
+					}
+				}
+		);
+	}
 
 
 	public void onBlockChange(List<BlockDto> blockChain) {
 		nodeService.getNodeList().forEach(
 				node -> {
-					String myUrl = "http://localhost:"+myPort;
+					String myUrl = "http://localhost:" + myPort;
 					if (!(node.url().equals(myUrl))) {
 						try {
 							HttpRequest request = HttpRequest.newBuilder()

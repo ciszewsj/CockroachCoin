@@ -1,6 +1,7 @@
 package ee.ciszewsj.cockroachcoin.controller;
 
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
+import ee.ciszewsj.cockroachcoin.data.Transaction;
 import ee.ciszewsj.cockroachcoin.data.response.TransactionListResponse;
 import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import ee.ciszewsj.cockroachcoin.service.BlockService;
@@ -35,4 +36,8 @@ public class TransactionsController {
 		transactionService.doTransaction(request);
 	}
 
+	@PostMapping("/new")
+	public void newTransaction(Transaction transaction) {
+		transactionService.newTransaction(transaction);
+	}
 }
