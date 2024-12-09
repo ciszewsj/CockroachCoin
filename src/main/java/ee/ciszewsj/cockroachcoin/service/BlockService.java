@@ -44,7 +44,6 @@ public class BlockService {
 		if (validateBlockChain()) {
 			if (blockChain.size() <= blockList.size()) {
 				log.error("SMALLER SIZE OF BLOCKCHAIN!");
-//				throw new IllegalStateException("SMALLER SIZE OF BLOCKCHAIN");
 				return;
 			}
 		}
@@ -54,7 +53,9 @@ public class BlockService {
 				throw new IllegalStateException("INCORRECT HASH");
 			}
 		}
-		blockList.clear();
+		if (blockList.getFirst() != blockChain.getFirst()) {
+			blockList.clear();
+		}
 		blockList.addAll(blockChain);
 		notifyObservers();
 	}

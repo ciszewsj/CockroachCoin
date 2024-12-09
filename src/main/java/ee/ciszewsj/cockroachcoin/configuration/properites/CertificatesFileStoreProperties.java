@@ -4,9 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("certificates")
 public record CertificatesFileStoreProperties(String myName,
-                                              String privateKey,
-                                              String publicKey,
                                               String connectUrl,
                                               String myUrl,
-                                              String path) {
+                                              int difficulty,
+                                              long award,
+                                              String minerKey) {
 }

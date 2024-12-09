@@ -43,23 +43,12 @@ public class NodeInitializer {
 	                       TransactionService transactionService,
 	                       CertificatesService certificatesService,
 	                       Clock clock,
-	                       NodeService nodeService) throws IOException, InterruptedException {
+	                       NodeService nodeService) {
 		this.properties = properties;
 		this.transactionService = transactionService;
 		this.certificatesService = certificatesService;
 		this.nodeService = nodeService;
 		this.clock = clock;
-
-
-		// this check will not work, because the value is injected after the constructor
-//		if (isInitNode) {
-//			log.info("Starting as INIT node, initializing first transaction");
-//			initFirstTransactionAndInitialize();
-//		} else {
-//			log.info("Starting as NOT an INIT node");
-////			getTransactions();
-//		}
-		recalculateTransactions();
 	}
 
 
@@ -84,7 +73,6 @@ public class NodeInitializer {
 		if (response.statusCode() == 200) {
 			CreateNodeResponse nodeResponse = Json.mapper().readValue(response.body(), CreateNodeResponse.class);
 			log.info("Successfully read transactions from initial node [{}]", nodeResponse);
-			transactionService.addTransactionList(nodeResponse.transactionList());
 			for (Node node : nodeResponse.nodeList()) {
 				nodeService.registerNode(node);
 			}
@@ -96,27 +84,7 @@ public class NodeInitializer {
 
 	public void initFirstTransactionAndInitialize() {
 		ArrayList<Node> firstNodes = new ArrayList<>();
-		firstNodes.add(new Node("INIT", "http://localhost:"+myPort));
+		firstNodes.add(new Node("INIT", "http://localhost:" + myPort));
 		nodeService.setAsKnownNodes(firstNodes);
-		transactionService.addTransactionList(List.of(new Transaction(0, null, null, null, null, clock.millis(), Transaction.TYPE.GENESIS)));
-	}
-
-	public void recalculateTransactions() {
-		for (Transaction transaction : transactionService.getTransactionList()) {
-			if (transaction.type() == Transaction.TYPE.GENESIS) {
-				continue;
-			} else if (transaction.type() == Transaction.TYPE.DEPOSIT) {
-				continue;
-			}
-			boolean isValid = false;
-			try {
-				certificatesService.verifyObjectWithSignature(transaction.sender(), new TransactionRequest(transaction.sender(), transaction.receiver(), transaction.amount()), transaction.signature());
-				isValid = true;
-			} catch (Exception e) {
-				log.warn("Could not validated transaction [{}]", transaction, e);
-			}
-			if (isValid) {
-			}
-		}
 	}
 }

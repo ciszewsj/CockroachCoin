@@ -1,18 +1,18 @@
 package ee.ciszewsj.cockroachcoin.data.request;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.util.List;
+
 public record TransactionRequest(
-		@NotEmpty String sender,
-		@NotEmpty String receiver,
-		@Min(0) long amount
+		@Valid List<FromTransactionRequest> senders,
+		@Valid List<ToTransactionRequest> receivers
 ) {
-	public String sender() {
-		return sender.toLowerCase();
+	public record FromTransactionRequest(@NotEmpty String senderKey, @Min(0) long amount, String signature) {
 	}
 
-	public String receiver() {
-		return receiver.toLowerCase();
+	public record ToTransactionRequest(@NotEmpty String senderKey, @Min(0) long amount) {
 	}
 }

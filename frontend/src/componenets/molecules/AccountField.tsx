@@ -19,7 +19,7 @@ export const AccountField: FC<{
                 'accept': '*/*',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify("string")
+            body: cleanKey(accounts.publicKey)
         })
             .then(response => response.json())
             .then(data => setBalance(data.balance))
@@ -53,7 +53,11 @@ export const AccountField: FC<{
             <div className="max-w-xs overflow-hidden">
                 <p className="text-gray-700 text-md font-bold">Amount: {balance}</p>
                 <p className="text-gray-700 text-sm truncate"
-                   title={accounts.publicKey}>
+                   title={accounts.publicKey}
+                   onClick={() => {
+                       navigator.clipboard.writeText(cleanKey(accounts.publicKey))
+                   }}
+                >
                     {cleanKey(accounts.publicKey)}
                 </p>
             </div>

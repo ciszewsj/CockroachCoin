@@ -37,7 +37,7 @@ public class NodeController {
 	private final NodeInitializer nodeInitializer;
 	private final TransactionService transactionService;
 
-	public boolean hasJoinedNetwork=false;
+	public boolean hasJoinedNetwork = false;
 
 	@Value("${config.isInit:false}")
 	private boolean isInitNode;
@@ -57,9 +57,8 @@ public class NodeController {
 	public CreateNodeResponse handshake(@Valid @RequestBody Node request, ServletRequest servletRequest) {
 		log.info("Handshake request.");
 		log.info(request.toString());
-		// somewhat validate the request
-		if ( request.name()==null || request.name().isBlank()
-				|| request.url()==null || request.url().isBlank() ) {
+		if (request.name() == null || request.name().isBlank()
+				|| request.url() == null || request.url().isBlank()) {
 			return new CreateNodeResponse(null, null, null);
 		}
 
@@ -70,15 +69,14 @@ public class NodeController {
 		String remoteHost = servletRequest.getRemoteHost();
 		int remotePort = servletRequest.getRemotePort();
 
-		log.info("Gotten join request from " + remoteAddress + " (host: " + remoteHost + " ; port: "+ remotePort);
+		log.info("Gotten join request from " + remoteAddress + " (host: " + remoteHost + " ; port: " + remotePort);
 		log.info("Node named: " + requestedName + " ; claims address " + claimedUrl);
 
 		nodeService.registerNode(request);
 
 
 		ArrayList<Node> nodeList = nodeService.getNodeList();
-		List<Transaction> transactionList = transactionService.getTransactionList();
-		return new CreateNodeResponse(transactionList, nodeList, new ArrayList<>());
+		return new CreateNodeResponse(new ArrayList<>(), nodeList, new ArrayList<>());
 	}
 
 	//used for making the requesting node join the network
@@ -88,9 +86,8 @@ public class NodeController {
 			return new ResponseEntity<Object>("Node has already joined network", HttpStatus.FORBIDDEN);
 		if (isInitNode) {
 			log.info("Joining the network as an INIT node.");
-			hasJoinedNetwork=true;
+			hasJoinedNetwork = true;
 			nodeInitializer.initFirstTransactionAndInitialize();
-			nodeInitializer.recalculateTransactions();
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else { //
 			HttpClient httpClient = HttpClient.newHttpClient();
@@ -113,7 +110,6 @@ public class NodeController {
 				CreateNodeResponse nodeResponse = Json.mapper().readValue(response.body(), CreateNodeResponse.class);
 				log.info("Successfully read transactions from initial node [{}]", nodeResponse);
 
-				transactionService.addTransactionList(nodeResponse.transactionList());
 				nodeService.setAsKnownNodes(nodeResponse.nodeList());
 
 				hasJoinedNetwork = true;
