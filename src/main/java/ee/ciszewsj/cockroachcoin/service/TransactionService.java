@@ -50,6 +50,7 @@ public class TransactionService {
 		block.transactions().add(newTransaction);
 		minerService.listUpdated();
 		log.info("Successful do transaction [{}]", request);
+		communicationService.onNewTransaction(newTransaction);
 
 	}
 

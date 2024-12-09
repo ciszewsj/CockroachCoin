@@ -29,18 +29,15 @@ public class CommunicationService {
 	public void onNewBlock(BlockDto blockDto) {
 		nodeService.getNodeList().forEach(
 				node -> {
-					String myUrl = "http://localhost:" + myPort;
-					if (!(node.url().equals(myUrl))) {
-						try {
-							HttpRequest request = HttpRequest.newBuilder()
-									.uri(URI.create(node.url() + "/api/v1/block/new"))
-									.header("Content-Type", "application/json")
-									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
-									.build();
-							httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-						} catch (Exception e) {
-							log.error("ERROR", e);
-						}
+					try {
+						HttpRequest request = HttpRequest.newBuilder()
+								.uri(URI.create(node.url() + "/api/v1/block/new"))
+								.header("Content-Type", "application/json")
+								.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
+								.build();
+						httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+					} catch (Exception e) {
+						log.error("ERROR", e);
 					}
 				}
 		);
@@ -49,18 +46,16 @@ public class CommunicationService {
 	public void onNewTransaction(Transaction transaction) {
 		nodeService.getNodeList().forEach(
 				node -> {
-					String myUrl = "http://localhost:" + myPort;
-					if (!(node.url().equals(myUrl))) {
-						try {
-							HttpRequest request = HttpRequest.newBuilder()
-									.uri(URI.create(node.url() + "/api/v1/transactions/new"))
-									.header("Content-Type", "application/json")
-									.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(transaction)))
-									.build();
-							httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-						} catch (Exception e) {
-							log.error("ERROR", e);
-						}
+					try {
+						HttpRequest request = HttpRequest.newBuilder()
+								.uri(URI.create(node.url() + "/api/v1/transactions/new"))
+								.header("Content-Type", "application/json")
+								.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(transaction)))
+								.build();
+						httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+						log.info("Czy to dziala ????");
+					} catch (Exception e) {
+						log.error("ERROR", e);
 					}
 				}
 		);
