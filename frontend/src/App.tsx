@@ -6,6 +6,7 @@ import {CredentialsDto} from "./types/CredentialsDto";
 import {KeysObject} from "./types/KeysObject";
 import {HttpAddressProvider} from "./context/HttpAddressProvider";
 import {BlockChainPage} from "./pages/BlockChainPage";
+import {TransactionPage} from "./pages/TransactionPage";
 
 function App() {
 
@@ -21,6 +22,8 @@ function App() {
                            element={<WalletPage credentials={credentials} setKeys={setKeys} keys={keys}/>}/>
                     <Route path={"/blocks"}
                            element={<BlockChainPage/>}/>
+                    <Route path={"/transaction"}
+                           element={<TransactionPage credentials={credentials} setKeys={setKeys} keys={keys}/>}/>
                 </Routes>
             </BrowserRouter>
         </HttpAddressProvider>

@@ -7,7 +7,7 @@ import java.util.List;
 
 public record BlockDto(
 		int index,
-		List<Object> transactions,
+		List<Transaction> transactions,
 		long timestamp,
 		long previousNonce,
 		String previousHash

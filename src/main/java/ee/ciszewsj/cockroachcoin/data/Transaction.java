@@ -1,10 +1,14 @@
 package ee.ciszewsj.cockroachcoin.data;
 
-public record  Transaction(
-		long amount,
-		String sender,
-		String receiver,
-		String signature,
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.security.MessageDigest;
+import java.util.List;
+
+public record Transaction(
+		int index,
+		List<FromTransactionField> senders,
+		List<ToTransactionField> receivers,
 		String prev_hash,
 		long timestamp,
 		TYPE type
@@ -13,5 +17,28 @@ public record  Transaction(
 		GENESIS,
 		DEPOSIT,
 		TRANSFER,
+	}
+
+	public String calculateHash() {
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+
+			String data = index + objectMapper.writeValueAsString(senders) + objectMapper.writeValueAsString(receivers) + timestamp + prev_hash;
+
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hashBytes = digest.digest(data.getBytes());
+
+			StringBuilder hexString = new StringBuilder();
+			for (byte b : hashBytes) {
+				String hex = Integer.toHexString(0xff & b);
+				if (hex.length() == 1) {
+					hexString.append('0');
+				}
+				hexString.append(hex);
+			}
+			return hexString.toString();
+		} catch (Exception e) {
+			throw new RuntimeException("Błąd przy generowaniu hasha", e);
+		}
 	}
 }

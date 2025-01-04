@@ -22,11 +22,16 @@ public class BlockController {
 
 	@GetMapping("/validate")
 	public boolean getBlockValidate() {
-		return blockService.validateBlockChain();
+		return BlockService.validateBlockChain(blockService.getBlockList());
 	}
 
 	@PostMapping
 	public void postBlocks(@RequestBody List<BlockDto> blockChain) {
 		blockService.postNewBlockChain(blockChain);
+	}
+
+	@PostMapping("/new")
+	public void newBlock(@RequestBody BlockDto blockDto) {
+		blockService.postNewBlock(blockDto);
 	}
 }

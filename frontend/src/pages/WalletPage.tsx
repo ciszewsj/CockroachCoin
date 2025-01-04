@@ -9,6 +9,7 @@ import {CredentialsDto} from "../types/CredentialsDto";
 import {addKeyToLocalStorage} from "../utils/LocalStorageUtils";
 import ImportFileModal from "../componenets/organisms/ImportFileModal";
 import {ChooseHttpAddressButton} from "../componenets/organisms/ChooseHttpAddressButton";
+import {useNavigate} from "react-router-dom";
 
 export const WalletPage: FC<{
     credentials?: CredentialsDto,
@@ -17,6 +18,7 @@ export const WalletPage: FC<{
 }> = ({credentials, keys, setKeys}) => {
 
     const [importOpen, setImportOpen] = useState<boolean>(false)
+    const navigate = useNavigate();
 
     return (
         <SecuredPage credentials={credentials}>
@@ -41,6 +43,18 @@ export const WalletPage: FC<{
                         </MainButton>
                         <SecondaryButton onClick={(e) => setImportOpen(true)}>
                             Import
+                        </SecondaryButton>
+                    </div>
+                    <div className="flex space-x-2">
+                        <MainButton onClick={() => {
+                            navigate("/blocks")
+                        }}>
+                            Blocks
+                        </MainButton>
+                        <SecondaryButton onClick={() => {
+                            navigate("/transaction")
+                        }}>
+                            Do transaction
                         </SecondaryButton>
                     </div>
                     <AccountList credentials={credentials!} keys={keys} setKeys={setKeys}/>

@@ -1,17 +1,14 @@
 package ee.ciszewsj.cockroachcoin.service;
 
 import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import io.swagger.v3.core.util.Json;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
@@ -24,14 +21,19 @@ import static ee.ciszewsj.cockroachcoin.configuration.GlobalExceptionHandler.UNA
 @Service
 @EnableConfigurationProperties(CertificatesFileStoreProperties.class)
 public class CertificatesService {
-	private final CertificatesFileStoreProperties properties;
 
-	public CertificatesService(CertificatesFileStoreProperties properties) {
+	public CertificatesService() {
 		Security.addProvider(new BouncyCastleProvider());
-		this.properties = properties;
 	}
 
-	public void verifyObjectWithSignature(String owner, Object object, String encodedSignature) {
+	public void verifyObjectWithSignature(TransactionRequest request) {
+		for (var senderTransaction : request.senders()) {
+			verifyObjectWithSignature(senderTransaction.senderKey(), Long.toString(senderTransaction.amount()), senderTransaction.signature());
+		}
+		log.info("Successful verify transaction with keys");
+	}
+
+	public void verifyObjectWithSignature(String ownerKey, Object object, String encodedSignature) {
 		try {
 			String signedObject;
 			if (object.getClass().equals(String.class)) {
@@ -39,7 +41,7 @@ public class CertificatesService {
 			} else {
 				signedObject = Json.mapper().writeValueAsString(object);
 			}
-			PublicKey publicKey = readPublicKey(owner);
+			PublicKey publicKey = readPublicKey(ownerKey);
 
 			Signature signature = Signature.getInstance("SHA256withRSA");
 			signature.initVerify(publicKey);
@@ -51,45 +53,31 @@ public class CertificatesService {
 			try {
 				isVerified = signature.verify(signatureBytes);
 			} catch (SignatureException e) {
-				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", owner, signedObject, encodedSignature, e);
-				return;
+				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", ownerKey, signedObject, encodedSignature, e);
+				throw UNAUTHORIZED_EXCEPTION;
 			}
 			if (isVerified) {
-				log.info("Signature is correct [owner={}]", owner);
+				log.info("Signature is correct [owner={}]", ownerKey);
 			} else {
-				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", owner, signedObject, encodedSignature);
+				log.warn("Signature is not valid [owner={}, signedObject={}, encodedSignature={}]", ownerKey, signedObject, encodedSignature);
 				throw UNAUTHORIZED_EXCEPTION;
 			}
 		} catch (HttpStatusCodeException e) {
 			throw e;
 		} catch (Exception e) {
-			log.error("Error during verifying object [owner={}, object={}, signature={}]", owner, object, encodedSignature, e);
+			log.error("Error during verifying object [owner={}, object={}, signature={}]", ownerKey, object, encodedSignature, e);
 			throw INTERNAL_SERVER_EXCEPTION;
 		}
 	}
 
-	private PublicKey readPublicKey(String owner) throws Exception {
-		KeyFactory factory = KeyFactory.getInstance("RSA");
-		String path = properties.path() + "/" + owner + TYPE.PUBLIC.suffix;
+	private PublicKey readPublicKey(String ownerKey) throws Exception {
+		String publicKeyPEM = ownerKey.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "");
 
-		try (FileReader keyReader = new FileReader(path);
-		     PemReader pemReader = new PemReader(keyReader)) {
+		byte[] encoded = Base64.getDecoder().decode(publicKeyPEM);
 
-			PemObject pemObject = pemReader.readPemObject();
-			byte[] content = pemObject.getContent();
-			X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(content);
-			return factory.generatePublic(pubKeySpec);
-		}
-	}
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
-	@Getter
-	enum TYPE {
-		PRIVATE("_priv.pem"),
-		PUBLIC("_pub.pem");
-		private final String suffix;
-
-		TYPE(String suffix) {
-			this.suffix = suffix;
-		}
+		X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+		return keyFactory.generatePublic(keySpec);
 	}
 }
