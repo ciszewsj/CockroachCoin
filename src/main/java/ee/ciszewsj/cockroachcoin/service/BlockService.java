@@ -29,7 +29,7 @@ public class BlockService {
 	public static boolean validateBlockChain(List<BlockDto> blockList) {
 		for (int i = 0; i < blockList.size() - 1; i++) {
 			if (!blockList.get(i).validateHash(blockList.get(i + 1).previousHash(), blockList.get(i + 1).previousNonce())) {
-				log.warn("INCORRECT HASH FOR {}", i);
+				log.warn("blockchainValidationINCORRECT HASH FOR {}", i);
 				return false;
 			}
 		}
@@ -41,7 +41,7 @@ public class BlockService {
 		newList.add(newElem);
 		for (int i = 0; i < newList.size() - 1; i++) {
 			if (!newList.get(i).validateHash(newList.get(i + 1).previousHash(), newList.get(i + 1).previousNonce())) {
-				log.warn("INCORRECT HASH FOR {}", i);
+				log.warn("newElementValidationINCORRECT HASH FOR {}", i);
 				return false;
 			}
 		}
@@ -49,6 +49,7 @@ public class BlockService {
 	}
 
 	public void postNewBlock(BlockDto blockDto) {
+		log.info("posting new block");
 		if (!(blockDto.transactions().size() == 1
 				&& blockDto.transactions().getFirst().type() == Transaction.TYPE.GENESIS
 				&& blockDto.transactions().getFirst().senders().isEmpty()
@@ -71,6 +72,7 @@ public class BlockService {
 	}
 
 	public void postNewBlockChain(List<BlockDto> blockChain) {
+		log.info("posting new blockchain");
 		if (validateBlockChain(blockList)) {
 			if (blockChain.size() <= blockList.size()) {
 				log.error("SMALLER SIZE OF BLOCKCHAIN!");
