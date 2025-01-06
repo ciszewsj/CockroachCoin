@@ -48,8 +48,8 @@ public class BlockService {
 		return true;
 	}
 
-	public void postNewBlock(BlockDto blockDto) {
-		log.info("posting new block");
+	public void onNewBlockReceived(BlockDto blockDto) {
+		log.info("received a new block posted");
 		if (!(blockDto.transactions().size() == 1
 				&& blockDto.transactions().getFirst().type() == Transaction.TYPE.GENESIS
 				&& blockDto.transactions().getFirst().senders().isEmpty()
@@ -58,6 +58,12 @@ public class BlockService {
 			throw new IllegalStateException("NOT VALID BLOCK");
 		}
 		var newBlockList = new ArrayList<>(blockList);
+		// if it's the current first block, just skip it
+		if (blockDto.equals(blockList.getLast())) {
+			log.info("Block already contained, skipping...");
+			return;
+		}
+
 		newBlockList.add(blockDto);
 		if (validateBlockChain(newBlockList)) {
 			blockList = newBlockList;
@@ -71,7 +77,7 @@ public class BlockService {
 		}
 	}
 
-	public void postNewBlockChain(List<BlockDto> blockChain) {
+	public void onNewBlockChainReceived(List<BlockDto> blockChain) {
 		log.info("posting new blockchain");
 		if (validateBlockChain(blockList)) {
 			if (blockChain.size() <= blockList.size()) {
@@ -95,6 +101,7 @@ public class BlockService {
 
 	public synchronized void addNew(BlockDto dto) {
 		if (validateWithNewElement(dto)) {
+			log.info("new element validation is correct, propagating the block...");
 			blockList.add(dto);
 			communicationService.onNewBlock(dto);
 		}

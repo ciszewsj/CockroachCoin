@@ -8,10 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +32,7 @@ public class CommunicationService {
 	public void onNewBlock(BlockDto blockDto) {
 		nodeService.getNodeList().forEach(
 				node -> {
+					log.info("propagating to: " + node.name() + " at " + node.url());
 					try {
 						HttpRequest request = HttpRequest.newBuilder()
 								.uri(URI.create(node.url() + "/api/v1/block/new"))
@@ -36,8 +40,8 @@ public class CommunicationService {
 								.POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(blockDto)))
 								.build();
 						httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-					} catch (Exception e) {
-						log.error("ERROR", e);
+					} catch (IOException | InterruptedException e) {
+						log.error("CONNECTION ERROR");
 					}
 				}
 		);
