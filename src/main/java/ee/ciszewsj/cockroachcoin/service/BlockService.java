@@ -19,6 +19,7 @@ public class BlockService {
 
 	private final CommunicationService communicationService;
 	private final AccountService accountService;
+	private int newBlockFails = 0;
 
 	public BlockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService) {
 		this.blockList = blockList;
@@ -48,7 +49,7 @@ public class BlockService {
 		return true;
 	}
 
-	public void onNewBlockReceived(BlockDto blockDto) {
+	public void onNewBlockReceived(BlockDto blockDto) throws InterruptedException {
 		log.info("received a new block posted");
 		if (!(blockDto.transactions().size() == 1
 				&& blockDto.transactions().getFirst().type() == Transaction.TYPE.GENESIS
@@ -69,32 +70,47 @@ public class BlockService {
 			blockList = newBlockList;
 			accountService.doTransaction(blockDto.transactions().getFirst());
 			blockList = newBlockList;
-			log.error("Add new block from another source [block={}]", blockDto);
+			log.info("Add new block from another source [block={}]", blockDto);
 			communicationService.onNewBlock(blockDto);
 			notifyObservers();
+			newBlockFails = 0;
 		} else {
+			// Blockchain validation fails, there's an incorrect hash for some x
+			// What if we counted these fails, and if there are more than a certain number, then we fetch for a new blockchain (and if it's longer than ours, we replace ours)
 			log.error("Wrong block [block={}]", blockDto);
+			newBlockFails++;
+			if (newBlockFails > communicationService.nodeService.getNodes().size()-1) {
+				log.info("Number of blocks validation failed is high ({}), asking for blockchain", newBlockFails);
+				Thread.sleep(1000);
+				// now fetch to a node for a new blockchain and compare it
+				List<BlockDto> blockchainToCompare = communicationService.askForANewBlockchain();
+				onNewBlockChainReceived(blockchainToCompare);
+
+			}
 		}
 	}
 
 	public void onNewBlockChainReceived(List<BlockDto> blockChain) {
-		log.info("posting new blockchain");
-		if (validateBlockChain(blockList)) {
+		log.info("received a new blockchain posted");
+		if (validateBlockChain(blockChain)) {
 			if (blockChain.size() <= blockList.size()) {
-				log.error("SMALLER SIZE OF BLOCKCHAIN!");
+				log.error("SMALLER SIZE OF BLOCKCHAIN than what we have!");
 				return;
 			}
 		} else {
 			log.error("BLOCKCHAIN NOT CORRECT!!!");
-			throw new IllegalStateException("INCORRECT HASH");
+//			throw new IllegalStateException("INCORRECT HASH");
+			return;
 
 		}
-		if (blockList.getFirst() != blockChain.getFirst()) {
-			throw new IllegalStateException("THIS IS ANOTHER CRYPTO!!!");
+		if (!blockList.getFirst().equals(blockChain.getFirst())) {
+			log.error("THIS IS ANOTHER whole CRYPTO!!!");
+//			throw new IllegalStateException("THIS IS ANOTHER whole CRYPTO!!!");
+			return;
 		}
 		blockList.clear();
 		blockList.addAll(blockChain);
-		log.debug("Change blockchain successfully [blockChain={}]", blockChain);
+		log.debug("CHANGED BLOCKCHAIN SUCCESSFULLY [blockChain={}]", blockChain);
 		accountService.recalculate(blockChain);
 		notifyObservers();
 	}

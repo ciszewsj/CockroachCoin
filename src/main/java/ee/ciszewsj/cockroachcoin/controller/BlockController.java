@@ -16,7 +16,7 @@ public class BlockController {
 	private final BlockService blockService;
 
 	@GetMapping
-	public List<BlockDto> getBlock() {
+	public List<BlockDto> getBlockList() {
 		return blockService.getBlockList();
 	}
 
@@ -31,7 +31,7 @@ public class BlockController {
 	}
 
 	@PostMapping("/new")
-	public void newBlock(@RequestBody BlockDto blockDto) {
+	public void newBlock(@RequestBody BlockDto blockDto) throws InterruptedException {
 		blockService.onNewBlockReceived(blockDto);
 	}
 }
