@@ -27,11 +27,11 @@ public class BlockController {
 
 	@PostMapping
 	public void postBlocks(@RequestBody List<BlockDto> blockChain) {
-		blockService.postNewBlockChain(blockChain);
+		blockService.onNewBlockChainReceived(blockChain);
 	}
 
 	@PostMapping("/new")
 	public void newBlock(@RequestBody BlockDto blockDto) {
-		blockService.postNewBlock(blockDto);
+		blockService.onNewBlockReceived(blockDto);
 	}
 }

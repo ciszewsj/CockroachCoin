@@ -29,9 +29,10 @@ public class NodeController {
 
 	@PostMapping
 	public GreetingsResponse greetings(@RequestBody GreetingsRequest request) {
-		var nodes = nodeService.getNodes();
+
+		var nodes = nodeService.getNodes().stream().filter(n -> !(request.node().url().equals(n.url()))).toList();
 		nodeService.register(request.node());
-		log.info("Greetings with [{}]", request);
+		log.info("Received join request from [{}]", request);
 		return new GreetingsResponse(blockService.getBlockList(), nodes, new Node(properties.myName(), properties.myUrl()));
 	}
 }

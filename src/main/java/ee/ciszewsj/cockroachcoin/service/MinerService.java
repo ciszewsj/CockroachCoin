@@ -1,5 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
+import ee.ciszewsj.cockroachcoin.CockroachcoinApplication;
 import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
 import ee.ciszewsj.cockroachcoin.data.ToTransactionField;
@@ -9,16 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 
 @Slf4j
 public class MinerService {
+
 	private final Clock clock;
 	private final BlockService blockService;
 	private final AccountService accountService;
 	private final CertificatesFileStoreProperties properties;
 	private Thread miningThread;
-	private AtomicBoolean isMining = new AtomicBoolean(true);
+	public AtomicBoolean isMining = new AtomicBoolean(true);
 
 	public MinerService(Clock clock, AccountService accountService, BlockService blockService, CertificatesFileStoreProperties certificatesFileStoreProperties) {
 		this.clock = clock;
@@ -34,7 +38,7 @@ public class MinerService {
 		log.info("Start mining [minerKey={}]", properties.minerKey());
 		while (isMining.get()) {
 			String hash = previousBlock.calculateHash(nonce);
-			if (hash.startsWith("0".repeat(properties.difficulty()))) {
+			if (hash.startsWith("0".repeat(CockroachcoinApplication.DIFFICULTY))) {
 				Transaction reward = minedTransaction();
 				BlockDto newBlock = new BlockDto(previousBlock.index() + 1,
 						new ArrayList<>(List.of(reward)),
@@ -42,18 +46,18 @@ public class MinerService {
 						nonce,
 						hash
 				);
+				log.info("BLOCK MINED! [index={}, hash={}, by={}]", newBlock.index(), hash, properties.minerKey());
 				blockService.addNew(newBlock);
 				accountService.doTransaction(reward);
-				log.info("Block mined [index={}, hash={}, by={}]", newBlock.index(), hash, properties.minerKey());
 				break;
 			}
 			nonce++;
 		}
-		log.info("Stop mining without success [minerKey={}]", properties.minerKey());
+		log.info("Stopped mining for this thread. [minerKey={}]", properties.minerKey());
 	}
 
 	private Transaction minedTransaction() {
-		return new Transaction(0, List.of(), List.of(new ToTransactionField(properties.minerKey(), properties.award())), "", clock.millis(), Transaction.TYPE.GENESIS);
+		return new Transaction(0, List.of(), List.of(new ToTransactionField(properties.minerKey(), CockroachcoinApplication.REWARD)), "", clock.millis(), Transaction.TYPE.GENESIS);
 	}
 
 	public void startMiner() {
@@ -69,7 +73,13 @@ public class MinerService {
 			isMining.set(false);
 			isMining = new AtomicBoolean(true);
 			miningThread.interrupt();
+
 			miningThread = new Thread(() -> mineBlock(blockService.getLast(), isMining));
+//			try {
+//				Thread.sleep(100);
+//			} catch (Exception e) {
+////				log.error("Failed to sleep.");
+//			}
 			miningThread.start();
 		}
 	}

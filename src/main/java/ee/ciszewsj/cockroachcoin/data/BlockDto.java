@@ -1,10 +1,12 @@
 package ee.ciszewsj.cockroachcoin.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.security.MessageDigest;
 import java.util.List;
 
+@Slf4j
 public record BlockDto(
 		int index,
 		List<Transaction> transactions,
