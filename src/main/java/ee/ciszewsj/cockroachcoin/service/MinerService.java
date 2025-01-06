@@ -57,7 +57,7 @@ public class MinerService {
 	}
 
 	private Transaction minedTransaction() {
-		return new Transaction(0, List.of(), List.of(new ToTransactionField(properties.minerKey(), properties.award())), "", clock.millis(), Transaction.TYPE.GENESIS);
+		return new Transaction(0, List.of(), List.of(new ToTransactionField(properties.minerKey(), CockroachcoinApplication.REWARD)), "", clock.millis(), Transaction.TYPE.GENESIS);
 	}
 
 	public void startMiner() {
