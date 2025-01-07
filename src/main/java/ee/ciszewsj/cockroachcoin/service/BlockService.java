@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Lazy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -61,7 +60,7 @@ public class BlockService {
 	}
 
 	public void onNewBlockReceived(BlockDto blockDto) throws InterruptedException {
-		if (properties.impostor()){
+		if (properties.impostor()) {
 			return;
 		}
 		log.info("received a new block posted");
@@ -109,7 +108,7 @@ public class BlockService {
 	}
 
 	public void onNewBlockChainReceived(List<BlockDto> blockChain) {
-		if (properties.impostor()){
+		if (properties.impostor()) {
 			return;
 		}
 		log.info("received a new blockchain posted");
@@ -144,6 +143,10 @@ public class BlockService {
 		notifyObservers();
 
 		for (Transaction transaction : notCommittedTransaction) {
+			if (blockChain.getLast().transactions().stream().anyMatch(t -> t.timestamp() == transaction.timestamp())) {
+				log.info("Could not be 2 with same timestamp");
+				return;
+			}
 			try {
 				transactionService.recalculateTransaction(transaction);
 			} catch (Exception e) {

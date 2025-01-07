@@ -39,6 +39,11 @@ public class TransactionService {
 		}
 
 		BlockDto block = blockService.getLast();
+
+		if (block.transactions().stream().anyMatch(t -> t.timestamp() == request.timestamp())) {
+			throw new IllegalStateException("Could not be 2 transaction with same timestamp");
+		}
+
 		Transaction lastTransaction = block.transactions().getLast();
 
 		List<FromTransactionField> from = request.senders().stream().map(
@@ -76,6 +81,11 @@ public class TransactionService {
 		if (!transaction.prev_hash().equals(last.calculateHash())) {
 			throw new IllegalStateException("Wrong transaction!");
 		}
+
+		if (blockDto.transactions().stream().anyMatch(t -> t.timestamp() == transaction.timestamp())) {
+			throw new IllegalStateException("Could not be 2 transaction with same timestamp");
+		}
+
 		accountService.doTransaction(transaction);
 		blockDto.transactions().add(transaction);
 		log.info("Successful do transaction [{}]", transaction);
