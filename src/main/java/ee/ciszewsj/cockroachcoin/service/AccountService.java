@@ -45,8 +45,8 @@ public class AccountService {
 				}
 			}
 		}
-		lock.unlock();
 		balances = temporaryMap;
+		lock.unlock();
 	}
 
 	public synchronized void doTransaction(Transaction request) {

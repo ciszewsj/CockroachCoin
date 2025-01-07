@@ -5,9 +5,12 @@ import ee.ciszewsj.cockroachcoin.data.Transaction;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,12 +22,17 @@ public class BlockService {
 
 	private final CommunicationService communicationService;
 	private final AccountService accountService;
+
+	@Lazy
+	@Autowired
+	TransactionService transactionService;
 	private int newBlockFails = 0;
 
 	public BlockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService) {
 		this.blockList = blockList;
 		this.communicationService = communicationService;
 		this.accountService = accountService;
+		accountService.recalculate(blockList);
 	}
 
 	public static boolean validateBlockChain(List<BlockDto> blockList) {
@@ -79,15 +87,16 @@ public class BlockService {
 			// What if we counted these fails, and if there are more than a certain number, then we fetch for a new blockchain (and if it's longer than ours, we replace ours)
 			log.error("Wrong block [block={}]", blockDto);
 			newBlockFails++;
-			if (newBlockFails > communicationService.nodeService.getNodes().size()-1) {
+			if (newBlockFails > communicationService.nodeService.getNodes().size() - 1) {
 				log.info("Number of blocks validation failed is high ({}), asking for blockchain", newBlockFails);
 				Thread.sleep(1000);
 				// now fetch to a node for a new blockchain and compare it
 				List<BlockDto> blockchainToCompare = communicationService.askForANewBlockchain();
 				onNewBlockChainReceived(blockchainToCompare);
-
+				newBlockFails = 0;
 			}
 		}
+		accountService.recalculate(blockList);
 	}
 
 	public void onNewBlockChainReceived(List<BlockDto> blockChain) {
@@ -108,11 +117,28 @@ public class BlockService {
 //			throw new IllegalStateException("THIS IS ANOTHER whole CRYPTO!!!");
 			return;
 		}
+		List<Transaction> notCommittedTransaction =
+				blockList.stream()
+						.flatMap(block -> block.transactions().stream())
+						.filter(transaction -> blockChain.stream()
+								.flatMap(blockDto -> blockDto.transactions().stream())
+								.filter(t -> t.type() == Transaction.TYPE.TRANSFER)
+								.noneMatch(t -> t == transaction))
+						.toList();
+
 		blockList.clear();
 		blockList.addAll(blockChain);
 		log.debug("CHANGED BLOCKCHAIN SUCCESSFULLY [blockChain={}]", blockChain);
-		accountService.recalculate(blockChain);
 		notifyObservers();
+
+		for (Transaction transaction : notCommittedTransaction) {
+			try {
+				transactionService.recalculateTransaction(transaction);
+			} catch (Exception e) {
+				log.error("Could not add uncommitted transaction", e);
+			}
+		}
+		accountService.recalculate(blockList);
 	}
 
 	public synchronized void addNew(BlockDto dto) {
@@ -123,6 +149,7 @@ public class BlockService {
 		}
 
 		notifyObservers();
+		accountService.recalculate(blockList);
 	}
 
 	public BlockDto getLast() {

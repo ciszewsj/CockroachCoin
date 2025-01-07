@@ -74,4 +74,9 @@ public class TransactionService {
 		communicationService.onNewTransaction(transaction);
 	}
 
+	public void recalculateTransaction(Transaction transaction) {
+		Transaction last = blockService.getBlockList().getLast().transactions().getLast();
+		newTransaction(transaction.recalculate(last.index() + 1, last.calculateHash()));
+	}
+
 }

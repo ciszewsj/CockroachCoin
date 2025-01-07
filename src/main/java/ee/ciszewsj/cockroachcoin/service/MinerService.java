@@ -75,11 +75,6 @@ public class MinerService {
 			miningThread.interrupt();
 
 			miningThread = new Thread(() -> mineBlock(blockService.getLast(), isMining));
-//			try {
-//				Thread.sleep(100);
-//			} catch (Exception e) {
-////				log.error("Failed to sleep.");
-//			}
 			miningThread.start();
 		}
 	}

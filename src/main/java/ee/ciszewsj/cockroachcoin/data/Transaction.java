@@ -21,6 +21,10 @@ public record Transaction(
 		TRANSFER,
 	}
 
+	public Transaction recalculate(int index, String prev_hash) {
+		return new Transaction(index, senders, receivers, prev_hash, timestamp, type);
+	}
+
 	public String calculateHash() {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
