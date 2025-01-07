@@ -75,17 +75,16 @@ public class BlockService {
 			log.info("Block already contained, skipping...");
 			return;
 		}
-
+		if (properties.impostor()) {
+			log.warn("Make impostor block");
+			return;
+		}
 		newBlockList.add(blockDto);
 		if (validateBlockChain(newBlockList)) {
 			blockList = newBlockList;
 			accountService.doTransaction(blockDto.transactions().getFirst());
 			blockList = newBlockList;
 			log.info("Add new block from another source [block={}]", blockDto);
-			if (properties.impostor()) {
-				log.warn("Make impostor block");
-				blockDto = blockDto.impostorHash();
-			}
 			communicationService.onNewBlock(blockDto);
 			notifyObservers();
 			newBlockFails = 0;
