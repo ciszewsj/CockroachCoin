@@ -1,7 +1,7 @@
 package ee.ciszewsj.cockroachcoin.data;
 
 public record ToTransactionField(
-		String publicKey,
+		String senderKey,
 		long amount
 ) {
 }

@@ -38,9 +38,9 @@ public class AccountService {
 					temporaryMap.put(sender.senderKey(), balance);
 				}
 				for (var receiver : transaction.receivers()) {
-					var balance = temporaryMap.getOrDefault(receiver.publicKey(), 0L);
+					var balance = temporaryMap.getOrDefault(receiver.senderKey(), 0L);
 					balance += receiver.amount();
-					temporaryMap.put(receiver.publicKey(), balance);
+					temporaryMap.put(receiver.senderKey(), balance);
 					balances = temporaryMap;
 				}
 			}
@@ -66,11 +66,11 @@ public class AccountService {
 		}
 
 		for (var receiver : request.receivers()) {
-			long balance = temporaryMap.getOrDefault(receiver.publicKey(), 0L);
+			long balance = temporaryMap.getOrDefault(receiver.senderKey(), 0L);
 			balance += receiver.amount();
 
-			temporaryMap.put(receiver.publicKey(), balance);
-			log.info("Update balance for receiver [balance={}, senderKey={}]", balance, receiver.publicKey());
+			temporaryMap.put(receiver.senderKey(), balance);
+			log.info("Update balance for receiver [balance={}, senderKey={}]", balance, receiver.senderKey());
 		}
 
 		balances.clear();
