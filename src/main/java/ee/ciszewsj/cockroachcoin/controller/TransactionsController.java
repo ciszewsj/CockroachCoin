@@ -39,6 +39,7 @@ public class TransactionsController {
 	@PostMapping("/new")
 	public void newTransaction(@RequestBody Transaction transaction) {
 		log.info("Request for new transaction [{}]", transaction);
+		certificatesService.verifyObjectWithSignature(transaction);
 		transactionService.newTransaction(transaction);
 	}
 }

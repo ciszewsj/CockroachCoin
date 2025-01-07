@@ -1,8 +1,12 @@
 package ee.ciszewsj.cockroachcoin.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
+import ee.ciszewsj.cockroachcoin.data.FromTransactionField;
+import ee.ciszewsj.cockroachcoin.data.Transaction;
 import ee.ciszewsj.cockroachcoin.data.request.TransactionRequest;
 import io.swagger.v3.core.util.Json;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,10 +30,29 @@ public class CertificatesService {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 
+	@SneakyThrows
 	public void verifyObjectWithSignature(TransactionRequest request) {
-		for (var senderTransaction : request.senders()) {
-			verifyObjectWithSignature(senderTransaction.senderKey(), Long.toString(senderTransaction.amount()), senderTransaction.signature());
+
+		for (int i = 0; i < request.senders().size(); i++) {
+			TransactionRequest.FromTransactionRequest transactionRequest = request.senders().get(i);
+			String ver = new ObjectMapper().writeValueAsString(transactionRequest.decode(i, request.timestamp(), request.receivers()));
+			log.warn("OBJ_TO_VERIFY [obj={}] ", ver);
+			verifyObjectWithSignature(transactionRequest.senderKey(), ver, transactionRequest.signature());
 		}
+
+		log.info("Successful verify transaction with keys");
+	}
+
+	@SneakyThrows
+	public void verifyObjectWithSignature(Transaction request) {
+
+		for (int i = 0; i < request.senders().size(); i++) {
+			FromTransactionField transactionRequest = request.senders().get(i);
+			String ver = new ObjectMapper().writeValueAsString(transactionRequest.decode(i, request.timestamp(), request.receivers()));
+			log.warn("OBJ_TO_VERIFY [obj={}] ", ver);
+			verifyObjectWithSignature(transactionRequest.publicKey(), ver, transactionRequest.signature());
+		}
+
 		log.info("Successful verify transaction with keys");
 	}
 

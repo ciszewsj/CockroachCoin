@@ -11,7 +11,7 @@ import {SenderCreatorDto} from "../types/SenderCreatorDto";
 import {ReceiverCreatorDto} from "../types/ReceiverCreatorDto";
 import {HttpAddressContext} from "../context/HttpAddressProvider";
 import {cleanKey} from "../utils/ClearKey";
-import {TransactionRequest} from "../types/TransactionRequest";
+import {SigningObject, TransactionRequest} from "../types/TransactionRequest";
 import {createBase64Signature} from "../utils/SignatureCreator";
 
 export const TransactionPage: FC<{
@@ -39,22 +39,35 @@ export const TransactionPage: FC<{
                     <SendersTransactionCreator keys={keys} setSenders={setSenders} senders={senders}/>
                     <ReceiversTransactionCreator receivers={receivers} setReceivers={setReceivers}/>
                     <MainButton onClick={() => {
+                        const time = Date.now()
+
+                        const recivers = receivers.map(receiver => {
+                            return {
+                                senderKey: receiver.key,
+                                amount: receiver.amount,
+                            }
+                        })
+                        let index = 0
+                        const sendersR = senders.map(sender => {
+                            const signingObject: SigningObject = {
+                                index: index++,
+                                timestamp: time,
+                                amount: sender.amount,
+                                out: recivers,
+                            }
+                            const objToSing = JSON.stringify(signingObject)
+                            console.error(objToSing)
+                            return {
+                                senderKey: cleanKey(sender.key.publicKey),
+                                amount: sender.amount,
+                                signature: createBase64Signature(objToSing, sender.key.privateKey)
+                            }
+                        })
+
                         const transactionRequest: TransactionRequest = {
-                            senders:
-                                senders.map(sender => {
-                                    return {
-                                        senderKey: cleanKey(sender.key.publicKey),
-                                        amount: sender.amount,
-                                        signature: createBase64Signature(sender.amount.toString(), sender.key.privateKey)
-                                    }
-                                })
-                            ,
-                            receivers: receivers.map(receiver => {
-                                return {
-                                    senderKey: receiver.key,
-                                    amount: receiver.amount,
-                                }
-                            })
+                            timestamp: time,
+                            senders: sendersR,
+                            receivers: recivers
 
                         }
 

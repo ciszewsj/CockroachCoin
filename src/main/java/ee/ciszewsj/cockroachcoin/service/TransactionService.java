@@ -17,7 +17,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
-	private final Clock clock;
 	private final AccountService accountService;
 	private final BlockService blockService;
 	private final MinerService minerService;
@@ -50,7 +49,7 @@ public class TransactionService {
 				receiver -> new ToTransactionField(receiver.senderKey(), receiver.amount())
 		).toList();
 
-		Transaction newTransaction = new Transaction(lastTransaction.index() + 1, from, to, lastTransaction.calculateHash(), clock.millis(), Transaction.TYPE.TRANSFER);
+		Transaction newTransaction = new Transaction(lastTransaction.index() + 1, from, to, lastTransaction.calculateHash(), request.timestamp(), Transaction.TYPE.TRANSFER);
 		accountService.doTransaction(newTransaction);
 		block.transactions().add(newTransaction);
 		minerService.listUpdated();
