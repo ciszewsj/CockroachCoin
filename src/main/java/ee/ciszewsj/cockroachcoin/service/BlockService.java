@@ -61,6 +61,9 @@ public class BlockService {
 	}
 
 	public void onNewBlockReceived(BlockDto blockDto) throws InterruptedException {
+		if (properties.impostor()){
+			return;
+		}
 		log.info("received a new block posted");
 		if (!(blockDto.transactions().size() == 1
 				&& blockDto.transactions().getFirst().type() == Transaction.TYPE.GENESIS
@@ -106,6 +109,9 @@ public class BlockService {
 	}
 
 	public void onNewBlockChainReceived(List<BlockDto> blockChain) {
+		if (properties.impostor()){
+			return;
+		}
 		log.info("received a new blockchain posted");
 		if (validateBlockChain(blockChain)) {
 			if (blockChain.size() <= blockList.size()) {

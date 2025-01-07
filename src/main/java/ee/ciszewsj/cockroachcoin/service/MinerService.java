@@ -70,6 +70,10 @@ public class MinerService {
 
 	}
 
+	public void stopMiner() {
+		isMining.set(false);
+	}
+
 	public void listUpdated() {
 		if (miningThread != null) {
 			isMining.set(false);
