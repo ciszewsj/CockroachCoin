@@ -97,7 +97,6 @@ public class BlockService {
 			newBlockFails++;
 			if (newBlockFails > communicationService.nodeService.getNodes().size() - 1) {
 				log.info("Number of blocks validation failed is high ({}), asking for blockchain", newBlockFails);
-				Thread.sleep(1000);
 				// now fetch to a node for a new blockchain and compare it
 				List<BlockDto> blockchainToCompare = communicationService.askForANewBlockchain();
 				onNewBlockChainReceived(blockchainToCompare);
