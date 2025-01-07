@@ -49,6 +49,8 @@ public class MinerService {
 				log.info("BLOCK MINED! [index={}, hash={}, by={}]", newBlock.index(), hash, properties.minerKey());
 				blockService.addNew(newBlock);
 				accountService.doTransaction(reward);
+
+				accountService.recalculate(blockService.getBlockList());
 				break;
 			}
 			nonce++;

@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record CertificatesFileStoreProperties(String myName,
                                               String connectUrl,
                                               String myUrl,
-                                              String minerKey) {
+                                              String minerKey,
+                                              boolean impostor) {
 }

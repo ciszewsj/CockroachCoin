@@ -52,6 +52,8 @@ public class TransactionService {
 		log.info("Successful do transaction [{}]", request);
 		communicationService.onNewTransaction(newTransaction);
 
+		accountService.recalculate(blockService.getBlockList());
+
 	}
 
 	public void newTransaction(Transaction transaction) {
@@ -72,6 +74,8 @@ public class TransactionService {
 		blockDto.transactions().add(transaction);
 		log.info("Successful do transaction [{}]", transaction);
 		communicationService.onNewTransaction(transaction);
+
+		accountService.recalculate(blockService.getBlockList());
 	}
 
 	public void recalculateTransaction(Transaction transaction) {
