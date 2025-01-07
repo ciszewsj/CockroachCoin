@@ -1,5 +1,6 @@
 package ee.ciszewsj.cockroachcoin.service;
 
+import ee.ciszewsj.cockroachcoin.configuration.properites.CertificatesFileStoreProperties;
 import ee.ciszewsj.cockroachcoin.data.BlockDto;
 import ee.ciszewsj.cockroachcoin.data.Transaction;
 import lombok.Getter;
@@ -22,16 +23,18 @@ public class BlockService {
 
 	private final CommunicationService communicationService;
 	private final AccountService accountService;
+	private final CertificatesFileStoreProperties properties;
 
 	@Lazy
 	@Autowired
 	TransactionService transactionService;
 	private int newBlockFails = 0;
 
-	public BlockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService) {
+	public BlockService(List<BlockDto> blockList, CommunicationService communicationService, AccountService accountService, CertificatesFileStoreProperties properties) {
 		this.blockList = blockList;
 		this.communicationService = communicationService;
 		this.accountService = accountService;
+		this.properties = properties;
 		accountService.recalculate(blockList);
 	}
 
@@ -79,6 +82,10 @@ public class BlockService {
 			accountService.doTransaction(blockDto.transactions().getFirst());
 			blockList = newBlockList;
 			log.info("Add new block from another source [block={}]", blockDto);
+			if (properties.impostor()) {
+				log.warn("Make impostor block");
+				blockDto = blockDto.impostorHash();
+			}
 			communicationService.onNewBlock(blockDto);
 			notifyObservers();
 			newBlockFails = 0;

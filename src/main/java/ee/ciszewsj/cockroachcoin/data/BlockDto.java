@@ -14,6 +14,10 @@ public record BlockDto(
 		long previousNonce,
 		String previousHash
 ) {
+	public BlockDto impostorHash() {
+		return new BlockDto(index, transactions, timestamp, previousNonce, "0000000000000000");
+	}
+
 	public String calculateHash(long nonce) {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
