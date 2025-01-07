@@ -29,13 +29,13 @@ public class AccountService {
 		for (var block : blockChain) {
 			for (var transaction : block.transactions()) {
 				for (var sender : transaction.senders()) {
-					var balance = temporaryMap.getOrDefault(sender.publicKey(), 0L);
+					var balance = temporaryMap.getOrDefault(sender.senderKey(), 0L);
 					balance -= sender.amount();
 					if (balance < 0) {
 						lock.unlock();
 						throw new IllegalStateException("AMOUNT ON ACCOUNT < 0");
 					}
-					temporaryMap.put(sender.publicKey(), balance);
+					temporaryMap.put(sender.senderKey(), balance);
 				}
 				for (var receiver : transaction.receivers()) {
 					var balance = temporaryMap.getOrDefault(receiver.publicKey(), 0L);
@@ -53,7 +53,7 @@ public class AccountService {
 		lock.lock();
 		Map<String, Long> temporaryMap = new HashMap<>(balances);
 		for (var sender : request.senders()) {
-			long balance = temporaryMap.getOrDefault(sender.publicKey(), 0L);
+			long balance = temporaryMap.getOrDefault(sender.senderKey(), 0L);
 			balance -= sender.amount();
 
 			if (balance < 0) {
@@ -61,8 +61,8 @@ public class AccountService {
 				throw new IllegalStateException("AMOUNT ON ACCOUNT < 0");
 			}
 
-			temporaryMap.put(sender.publicKey(), balance);
-			log.info("Update balance for sender [balance={}, publicKey={}]", balance, sender.publicKey());
+			temporaryMap.put(sender.senderKey(), balance);
+			log.info("Update balance for sender [balance={}, senderKey={}]", balance, sender.senderKey());
 		}
 
 		for (var receiver : request.receivers()) {
@@ -70,7 +70,7 @@ public class AccountService {
 			balance += receiver.amount();
 
 			temporaryMap.put(receiver.publicKey(), balance);
-			log.info("Update balance for receiver [balance={}, publicKey={}]", balance, receiver.publicKey());
+			log.info("Update balance for receiver [balance={}, senderKey={}]", balance, receiver.publicKey());
 		}
 
 		balances.clear();

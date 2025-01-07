@@ -50,7 +50,7 @@ public class CertificatesService {
 			FromTransactionField transactionRequest = request.senders().get(i);
 			String ver = new ObjectMapper().writeValueAsString(transactionRequest.decode(i, request.timestamp(), request.receivers()));
 			log.warn("OBJ_TO_VERIFY [obj={}] ", ver);
-			verifyObjectWithSignature(transactionRequest.publicKey(), ver, transactionRequest.signature());
+			verifyObjectWithSignature(transactionRequest.senderKey(), ver, transactionRequest.signature());
 		}
 
 		log.info("Successful verify transaction with keys");

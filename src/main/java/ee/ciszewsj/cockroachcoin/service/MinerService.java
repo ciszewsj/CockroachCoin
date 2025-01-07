@@ -30,7 +30,9 @@ public class MinerService {
 		this.blockService = blockService;
 		this.properties = certificatesFileStoreProperties;
 		this.blockService.addObserver(this);
-		startMiner();
+		if (properties.mining()) {
+			startMiner();
+		}
 	}
 
 	public void mineBlock(BlockDto previousBlock, AtomicBoolean isMining) {

@@ -7,5 +7,6 @@ public record CertificatesFileStoreProperties(String myName,
                                               String connectUrl,
                                               String myUrl,
                                               String minerKey,
-                                              boolean impostor) {
+                                              boolean impostor,
+                                              boolean mining) {
 }

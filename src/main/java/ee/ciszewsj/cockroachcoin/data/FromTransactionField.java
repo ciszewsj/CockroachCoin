@@ -3,7 +3,7 @@ package ee.ciszewsj.cockroachcoin.data;
 import java.util.List;
 
 public record FromTransactionField(
-		String publicKey,
+		String senderKey,
 		long amount,
 		String signature
 ) {

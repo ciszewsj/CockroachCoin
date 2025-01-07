@@ -16,7 +16,7 @@ public class AccountsController {
 
 	@PostMapping
 	public Account getAccount(@RequestBody(required = false) String publicKey) {
-		log.info("Request for get account [publicKey={}, balance={}]", publicKey, accountService.getBalance(publicKey));
+		log.info("Request for get account [senderKey={}, balance={}]", publicKey, accountService.getBalance(publicKey));
 		return new Account(accountService.getBalance(publicKey));
 	}
 }
